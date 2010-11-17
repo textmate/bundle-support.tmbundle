@@ -22,7 +22,7 @@ module TextMate
       default_line = options.has_key?(:file) ? 1 : ENV['TM_LINE_NUMBER']
       options = {:file => ENV['TM_FILEPATH'], :line => default_line, :column => 1}.merge(options)
       if options[:file]
-        `open "txmt://open?url=file://#{e_url options[:file]}&line=#{options[:line]}&column=#{options[:column]}"`
+        `"$TM_SUPPORT_PATH/bin/mate" -l #{options[:line]}:#{options[:column]} #{e_sh options[:file]}`
       else
         `open "txmt://open?line=#{options[:line]}&column=#{options[:column]}"`
       end
