@@ -104,10 +104,6 @@ module TextMate
     end
 
     def rescan_project
-      `osascript &>/dev/null \
-    	   -e 'tell app "SystemUIServer" to activate'; \
-    	 osascript &>/dev/null \
-    	   -e 'tell app "TextMate" to activate' &`
     end
   end
 
