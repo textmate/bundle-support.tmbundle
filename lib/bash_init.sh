@@ -42,9 +42,6 @@ exit_create_new_document ()	{ echo -n "$1"; exit 207; }
 
 # force TM to refresh current file and project drawer
 rescan_project () {
-	osascript &>/dev/null \
-	   -e 'tell app "SystemUIServer" to activate' \
-	   -e 'tell app "TextMate" to activate' &
 }
 
 # use this as a filter (|pre) when you want 
