@@ -102,7 +102,6 @@ module TextMate
         seen = [ ]
 
         paths = ENV['TM_THEME_PATH'].to_s.split(/:/)
-        paths << "#{ENV['TM_SUPPORT_PATH']}/themes"
         paths << "#{ENV['TM_BUNDLE_SUPPORT']}/css" if ENV.has_key? 'TM_BUNDLE_SUPPORT'
         paths << "#{ENV['HOME']}/Library/Application Support/TextMate/Themes/Webpreview"
 
