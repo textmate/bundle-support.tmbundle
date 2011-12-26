@@ -40,11 +40,11 @@ pass = false
 debug = false
 ARGV[3..-1].each {|e|
   case e
-  when /^-n(\d+)$/: num = $1.to_i
-  when /^-l(\d+)$/: levels = $1.to_i
-  when /^-e(.+)$/: error_text = $1
-  when /^-p$/: pass = true
-  when /^-d$/: debug = true
+  when /^-n(\d+)$/ then num = $1.to_i
+  when /^-l(\d+)$/ then levels = $1.to_i
+  when /^-e(.+)$/ then error_text = $1
+  when /^-p$/ then pass = true
+  when /^-d$/ then debug = true
   end
 }
 
