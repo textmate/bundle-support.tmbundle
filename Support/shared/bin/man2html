@@ -9,6 +9,8 @@ else
   name = '(unknown)'
 end
 
+STDOUT << [0xFEFF].pack("U*") # Output UTF-8 ByteOrderMark since this is the only way I have been able to make WebKit show the file as UTF-8. It ignores the <meta> tag and it also ignores the com.apple.TextEncoding extended attribute.
+
 STDOUT << <<-HTML
 <html>
 <head>
