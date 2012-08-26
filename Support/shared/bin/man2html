@@ -19,7 +19,7 @@ STDOUT << <<-HTML
   <script type="text/javascript">
     function man (sect, word) {
       var page = TextMate.system('"$TM_SUPPORT_PATH/bin/html_man.sh" ' + sect + ' ' + word, null).outputString;
-      window.location="tm-file://" + page;
+      window.location="file://" + page;
     }
   </script>
 </head>
