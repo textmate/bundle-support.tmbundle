@@ -9,8 +9,8 @@ require SUPPORT_LIB + 'tm/tempfile'
 require 'cgi'
 require 'fcntl'
 
-$KCODE = 'u'
-require 'jcode'
+$KCODE = 'u' if (RUBY_VERSION.to_f < 1.9)
+require "jcode" unless "".respond_to? :each_char
 
 $SCRIPTMATE_VERSION = "$Revision$"
 
