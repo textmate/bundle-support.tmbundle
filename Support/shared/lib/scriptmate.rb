@@ -10,7 +10,6 @@ require 'cgi'
 require 'fcntl'
 
 $KCODE = 'u' if (RUBY_VERSION.to_f < 1.9)
-require "jcode" unless "".respond_to? :each_char
 
 $SCRIPTMATE_VERSION = "$Revision$"
 
