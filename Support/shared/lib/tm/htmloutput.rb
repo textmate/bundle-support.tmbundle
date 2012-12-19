@@ -36,12 +36,12 @@ HTMLOUTPUT_TEMPLATE = <<-HTML
   <script src="file://<%= e_url support_path %>/script/sortable.js"   type="text/javascript" charset="utf-8"></script>
   <%= html_head -%>
 </head>
-<body id="tm_webpreview_body" class="<%= html_theme %>">
+<body id="tm_webpreview_body" class="<%= active_theme[:class] %>">
   <div id="tm_webpreview_header">
-    <img id="gradient" src="file://<%= e_url theme_path %>/images/header.png" alt="header">
+    <img id="gradient" src="file://<%= e_url active_theme[:path] %>/images/header.png" alt="header">
     <p class="headline"><%= page_title %></p>
     <p class="type"><%= sub_title %></p>
-    <img id="teaser" src="file://<%= e_url theme_path %>/images/teaser.png" alt="teaser">
+    <img id="teaser" src="file://<%= e_url active_theme[:path] %>/images/teaser.png" alt="teaser">
     <div id="theme_switcher">
       <form action="#" onsubmit="return false;">
         <div>
@@ -53,12 +53,12 @@ HTMLOUTPUT_TEMPLATE = <<-HTML
           </select>
         </div>
         <script type="text/javascript" charset="utf-8">
-          document.getElementById('theme_selector').value = '<%= html_theme %>';
+          document.getElementById('theme_selector').value = '<%= active_theme[:class] %>';
         </script>
       </form>
     </div>
   </div>
-  <div id="tm_webpreview_content" class="<%= html_theme %>">
+  <div id="tm_webpreview_content" class="<%= active_theme[:class] %>">
 HTML
 
 module TextMate
@@ -82,10 +82,9 @@ module TextMate
         end
 
         themes = collect_themes
-        html_theme = selected_theme
-        if dict = themes[:screen].find { |e| e[:class] == html_theme }
-          theme_path = dict[:path]
-        end
+        
+        active_theme = find_theme(themes, saved_theme) || find_theme(themes, 'bright')
+        
         support_path = ENV['TM_SUPPORT_PATH']
 
         ERB.new(HTMLOUTPUT_TEMPLATE, 0, '%-<>').result(binding)
@@ -124,8 +123,12 @@ module TextMate
 
         res
       end
+      
+      def find_theme(themes, theme)
+        themes[:screen].find { |e| e[:class] == theme }
+      end
 
-      def selected_theme
+      def saved_theme
         res = %x{ defaults 2>/dev/null read com.macromates.textmate.webpreview SelectedTheme }.chomp
         $? == 0 ? res : 'bright'
       end
