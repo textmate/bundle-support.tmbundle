@@ -1,6 +1,5 @@
 require "fileutils"
-
-require ENV['TM_SUPPORT_PATH'] + '/lib/tm/tempfile'
+require "#{ENV['TM_SUPPORT_PATH']}/lib/tm/tempfile"
 
 module TextMate
   class << self
@@ -31,6 +30,22 @@ module TextMate
     # Note that this method calls STDIN.read.  If you want to access the contents of the
     # current document after you've called this method, do File.read(ENV['TM_FILEPATH']).
 
+    def save_if_untitled(temp_ext='tmp')
+      return unless ENV['TM_FILEPATH'].nil?
+
+      ENV['TM_FILEPATH']         = TextMate::IO.tempfile(temp_ext).path
+      ENV['TM_FILENAME']         = File.basename(ENV['TM_FILEPATH'])
+      ENV['TM_FILE_IS_UNTITLED'] = 'true'
+
+      begin
+        Dir.chdir(File.dirname(ENV["TM_FILEPATH"]))
+        open(ENV['TM_FILEPATH'], 'w') { |io| io << STDIN.read }
+      rescue e
+        abort "Failed to save document as ‘#{ENV['TM_FILEPATH']}’: #{e}"
+      end
+    end
+
+    # DEPRECATED Starting with TextMate 2.0
     def save_current_document(temp_ext='tmp')
       
       doc, dst = STDIN.read, ENV['TM_FILEPATH']
