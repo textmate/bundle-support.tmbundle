@@ -113,12 +113,11 @@ module TextMate
           io << '<div class="executor">'
           
           callback = proc do |str, type|
-            str.gsub!(ENV["TM_FILEPATH"], "untitled") if ENV["TM_FILE_IS_UNTITLED"]
             filtered_str = block.call(str,type) if [:err, :out].include? type
             if [:err, :out].include?(type) and not filtered_str.nil?
-              io << filtered_str
+              io << fix_links_to_unsaved(filtered_str)
             else
-              str = htmlize(str)
+              str = linkify_file_references(str)
               str = "<span class=\"err\">#{str}</span>" if type == :err
               str = "<span class=\"echo\">#{str}</span>" if type == :echo
               io << str
@@ -141,27 +140,12 @@ module TextMate
             TextMate::Process.run(args, process_options, &callback)
           end
           finish = Time.now
-          
-          
+
           tm_error_fd_write.close
           error = tm_error_fd_read.read
           tm_error_fd_read.close
 
-          if ENV.has_key? "TM_FILE_IS_UNTITLED"
-            # replace links to temporary file with links to current (unsaved) file, by removing
-            # the url option from any txmt:// links.
-            error.gsub!("url=file://#{ENV['TM_FILEPATH']}", '')
-            error.gsub!("url=file://#{e_url ENV['TM_FILEPATH']}", '')
-            error.gsub!(ENV['TM_FILENAME'], "untitled")
-            error.gsub!(e_url(ENV['TM_FILENAME']), "untitled")
-          elsif ENV.has_key? 'TM_ORIG_FILEPATH'
-            error.gsub!(ENV['TM_FILEPATH'], ENV['TM_ORIG_FILEPATH'])
-            error.gsub!(e_url(ENV['TM_FILEPATH']), e_url(ENV['TM_ORIG_FILEPATH']))
-            error.gsub!(ENV['TM_FILENAME'], ENV['TM_ORIG_FILENAME'])
-            error.gsub!(e_url(ENV['TM_FILENAME']), e_url(ENV['TM_ORIG_FILENAME']))
-          end
-
-          io << error
+          io << fix_links_to_unsaved(error)
           io << '<div class="controls"><a href="#" onclick="copyOutput(document.getElementById(\'_executor_output\'))">copy output</a>'
           
           options[:controls].each_key {|key| io << " | <a href=\"javascript:TextMate.system('#{options[:controls][key]}')\">#{key}</a>"}
@@ -216,6 +200,52 @@ module TextMate
       end
 
       private
+
+      def fix_links_to_unsaved(str)
+        if ENV.has_key? "TM_FILE_IS_UNTITLED"
+          str = str.dup
+          str.gsub!("url=file://#{e_url ENV['TM_FILEPATH']}", "uuid=#{ENV['TM_DOCUMENT_UUID']}")
+          str.gsub!("url=file://#{ENV['TM_FILEPATH']}",       "uuid=#{ENV['TM_DOCUMENT_UUID']}")
+          str.gsub!(ENV['TM_FILEPATH'],                       ENV['TM_DISPLAYNAME'])
+          str.gsub!(ENV['TM_FILENAME'],                       ENV['TM_DISPLAYNAME'])
+        elsif ENV.has_key? "TM_ORIG_FILEPATH"
+          str = str.dup
+          str.gsub!("url=file://#{e_url ENV['TM_FILEPATH']}", "url=file://#{e_url ENV['TM_ORIG_FILEPATH']}")
+          str.gsub!("url=file://#{ENV['TM_FILEPATH']}",       "url=file://#{e_url ENV['TM_ORIG_FILEPATH']}")
+          str.gsub!(ENV['TM_FILEPATH'],                       ENV['TM_ORIG_FILEPATH'])
+          str.gsub!(ENV['TM_FILENAME'],                       ENV['TM_ORIG_FILENAME'])
+        end
+        str
+      end
+
+      def linkify_file_references(line)
+        dirs = [ '.', ENV['TM_PROJECT_DIRECTORY'] ]
+        if line =~ /^(.*?)(:(?:(\d+):)?(?:(\d+):)?)\s*(.*?)$/ and not $1.nil?
+          file, prefix, lineno, column, message = $1, $2, $3, $4, $5
+          path = dirs.map{ |dir| File.expand_path(file, dir) }.find{ |path| File.file? path }
+          unless path.nil?
+            relative = path
+
+            parms =  [ ]
+            parms << [   "line=#{lineno}" ] unless lineno.nil?
+            parms << [ "column=#{column}" ] unless column.nil?
+
+            if path == ENV['TM_FILEPATH'] and ENV.has_key? "TM_FILE_IS_UNTITLED"
+              parms << [ "uuid=#{ENV['TM_DOCUMENT_UUID']}" ]
+              relative = file = ENV['TM_DISPLAYNAME']
+            else
+              parms << [ "url=file://#{e_url path}" ]
+              relative = path.sub(/^#{Regexp.escape ENV['TM_PROJECT_DIRECTORY']}\/?/, '') if ENV.has_key? "TM_PROJECT_DIRECTORY"
+              file = File.basename(path)
+            end
+
+            info = relative.gsub('&', '&amp;').gsub('<', '&lt;').gsub('"', '&quot;')
+            return "<a href=\"txmt://open?#{parms.join '&'}\" title=\"#{info}\">#{file + prefix}</a> #{htmlize message}<br>\n"
+          end
+        end
+
+        return htmlize(fix_links_to_unsaved(line))
+      end
 
       def process_output_wrapper(io)
         io << <<-HTML
