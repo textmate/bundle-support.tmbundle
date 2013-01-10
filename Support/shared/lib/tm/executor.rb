@@ -73,6 +73,7 @@ module TextMate
                    :version_regex     => /\A(.*)$(?:\n.*)*/,
                    :version_replace   => '\1',
                    :verb              => "Running",
+                   :noun              => ENV['TM_DISPLAYNAME'],
                    :env               => nil,
                    :interactive_input => ENV['TM_INTERACTIVE_INPUT_DISABLED'].nil?,
                    :script_args       => [],
@@ -107,7 +108,7 @@ module TextMate
 
         options[:script_args].each { |arg| args << arg }
         
-        TextMate::HTMLOutput.show(:title => "#{options[:verb]} “#{ENV['TM_DISPLAYNAME'] || File.basename(ENV["TM_FILEPATH"])}”…", :sub_title => version, :html_head => script_style_header) do |io|
+        TextMate::HTMLOutput.show(:title => "#{options[:verb]} “#{options[:noun]}”…", :sub_title => version, :html_head => script_style_header) do |io|
           
           io << '<div class="executor">'
           
