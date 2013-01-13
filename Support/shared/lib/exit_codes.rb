@@ -31,7 +31,7 @@ module TextMate
   end
 
   def exit_show_tool_tip(out = nil)
-    print out if out
+    STDERR << out if out
     exit 206
   end
 

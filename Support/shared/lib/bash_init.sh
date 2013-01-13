@@ -31,14 +31,14 @@ textmate_init () {
 textmate_init "${TM_DIRECTORY:-$HOME}"
 
 # an abstract way to change the output option of the running command
-exit_discard ()					{ echo -n "$1"; exit 200; }
-exit_replace_text ()				{ echo -n "$1"; exit 201; }
-exit_replace_document ()		{ echo -n "$1"; exit 202; }
-exit_insert_text ()				{ echo -n "$1"; exit 203; }
-exit_insert_snippet ()			{ echo -n "$1"; exit 204; }
-exit_show_html ()					{ echo -n "$1"; exit 205; }
-exit_show_tool_tip ()			{ echo -n "$1"; exit 206; }
-exit_create_new_document ()	{ echo -n "$1"; exit 207; }
+exit_discard ()					{                   exit 200; }
+exit_replace_text ()				{ echo -n "$1";     exit 201; }
+exit_replace_document ()		{ echo -n "$1";     exit 202; }
+exit_insert_text ()				{ echo -n "$1";     exit 203; }
+exit_insert_snippet ()			{ echo -n "$1";     exit 204; }
+exit_show_html ()					{ echo -n "$1";     exit 205; }
+exit_show_tool_tip ()			{ echo -n "$1" >&1; exit 206; }
+exit_create_new_document ()	{ echo -n "$1";     exit 207; }
 
 # force TM to refresh current file and project drawer
 rescan_project () { true; }
