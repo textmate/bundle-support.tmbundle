@@ -6,7 +6,6 @@
 # that fancily HTML format stdout/stderr.
 #
 # Nice features include:
-#  • Automatic interactive input.
 #  • Automatic Fancy HTML headers
 #  • The environment variable TM_ERROR_FD will contain a file descriptor to which HTML-formatted
 #    exceptions can be written.
@@ -37,10 +36,6 @@
 #     The rules of String.sub apply.  By default, this just extracts $1 from the match.
 #   :verb describes what the call to Executor is doing.  Default is “Running”.
 #   :env is the environment in which the command will be run.  Default is ENV.
-#   :interactive_input tells Executor to inject the interactive input library
-#     into the program so that any requests for input present the user with a
-#     dialog to enter it. Default is true, or false if the environment has
-#     TM_INTERACTIVE_INPUT_DISABLED defined.
 #   :script_args are arguments to be passed to the *script* as opposed to the interpreter.  They will
 #     be appended after the path to the script in the arguments to the interpreter.
 #   :use_hashbang Tells Executor wether to override it's first argument with the current file's #! if that exists.
@@ -75,12 +70,11 @@ module TextMate
                    :verb              => "Running",
                    :noun              => ENV['TM_DISPLAYNAME'],
                    :env               => nil,
-                   :interactive_input => ENV['TM_INTERACTIVE_INPUT_DISABLED'].nil?,
                    :script_args       => [],
                    :use_hashbang      => true,
                    :controls          => {}}
         
-        passthrough_options = [:env, :input, :interactive_input]
+        passthrough_options = [:env, :input]
 
         options[:bootstrap] = ENV["TM_BUNDLE_SUPPORT"] + "/bin/bootstrap.sh" unless ENV["TM_BUNDLE_SUPPORT"].nil?
 
@@ -102,10 +96,6 @@ module TextMate
         tm_error_fd_read.fcntl(Fcntl::F_SETFD, 1)
         ENV['TM_ERROR_FD'] = tm_error_fd_write.to_i.to_s
 
-        tm_echo_fd_read, tm_echo_fd_write = ::IO.pipe
-        tm_echo_fd_read.fcntl(Fcntl::F_SETFD, 1)
-        ENV['TM_INTERACTIVE_INPUT_ECHO_FD'] = tm_echo_fd_write.to_i.to_s
-
         options[:script_args].each { |arg| args << arg }
         
         TextMate::HTMLOutput.show(:title => "#{options[:verb]} “#{options[:noun]}”…", :sub_title => version, :html_head => script_style_header) do |io|
@@ -119,13 +109,12 @@ module TextMate
             else
               str = linkify_file_references(str)
               str = "<span class=\"err\">#{str}</span>" if type == :err
-              str = "<span class=\"echo\">#{str}</span>" if type == :echo
               io << str
             end
             sleep(0.001)
           end
           
-          process_options = {:echo => true, :watch_fds => { :echo => tm_echo_fd_read }}
+          process_options = { }
           passthrough_options.each { |key| process_options[key] = options[key] if options.has_key?(key) }
           
           io << "<!-- » #{args[0,args.length-1].join(" ")} #{ENV["TM_DISPLAYNAME"]} -->"
@@ -193,7 +182,7 @@ module TextMate
       end
 
       def parse_version(executable, options)
-        out, err = TextMate::Process.run(executable, options[:version_args], :interactive_input => false)
+        out, err = TextMate::Process.run(executable, options[:version_args])
         if options[:version_regex] =~ (out + err)
           return (out + err).sub(options[:version_regex], options[:version_replace])
         end
@@ -335,9 +324,6 @@ HTML
     }
     div#_executor_output .err {  
       color: red;
-    }
-    div#_executor_output .echo {
-      font-style: italic;
     }
     div#_executor_output .test {
       font-weight: bold;
