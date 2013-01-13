@@ -274,7 +274,7 @@ HTML
   
   function copyOutput(element) {
     output = element.innerText;
-    cmd = TextMate.system('__CF_USER_TEXT_ENCODING=$UID:0x8000100:0x8000100 /usr/bin/pbcopy', function(){});
+    cmd = TextMate.system('/usr/bin/pbcopy', function(){});
     cmd.write(output);
     cmd.close();
     element.innerText = 'output copied to clipboard';
