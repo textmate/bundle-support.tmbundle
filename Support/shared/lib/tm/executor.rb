@@ -10,9 +10,9 @@
 #  • The environment variable TM_ERROR_FD will contain a file descriptor to which HTML-formatted
 #    exceptions can be written.
 #
-# Executor runs best if TextMate.save_current_document is called first.  Doing so ensures
+# Executor runs best if TextMate.save_if_untitled is called first.  Doing so ensures
 # that TM_FILEPATH contains the path to the contents of your current document, even if the
-# current document has not yet been saved, or the file is unwriteable.
+# current document is untitled.
 #
 # Call it like this (you'll get rudimentary htmlification of the executable's output):
 #
@@ -21,20 +21,21 @@
 # Or like this if you want to transform the output yourself:
 #
 #   TextMate::Executor.run(ENV['TM_SHELL'] || ENV['SHELL'] || 'bash', ENV['TM_FILEPATH']) do |str, type|
-#     str = htmlize(str)
-#     str =  "<span class=\"stderr\">#{htmlize(str)}</span>" if type == :out
+#     "<span class=\"stderr\">#{htmlize(str)}</span>" if type == :out
 #   end
 # 
 # Your block will be called with type :out or :err.  If you don't want to handle a particular type,
-# return nil and Executor will apply basic formatting for you.
+# return nil and Executor will apply basic formatting for you, including adding links for lines
+# starting with ‘«file»[:«line»[:«column»:]]«message»’.
 #
-# TextMate::Executor.run also accepts six optional named arguments.
+# TextMate::Executor.run also accepts seven optional named arguments.
 #   :version_args are arguments that will be passed to the executable to generate a version string for use as the page's subtitle.
 #   :version_regex is a regular expression to which the resulting version string is passed.
 #     The subtitle of the Executor.run output is generated from this match.  By default, this just takes the first line.
 #   :version_replace is a string that is used to generate a version string for the page's subtitle from matching :version_regex.
 #     The rules of String.sub apply.  By default, this just extracts $1 from the match.
 #   :verb describes what the call to Executor is doing.  Default is “Running”.
+#   :noun describes what the call to Executor is working on.  Default is $TM_DISPLAY_NAME.
 #   :env is the environment in which the command will be run.  Default is ENV.
 #   :script_args are arguments to be passed to the *script* as opposed to the interpreter.  They will
 #     be appended after the path to the script in the arguments to the interpreter.
