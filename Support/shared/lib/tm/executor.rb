@@ -49,6 +49,7 @@ require SUPPORT_LIB + 'tm/require_cmd'
 require SUPPORT_LIB + 'escape'
 require SUPPORT_LIB + 'exit_codes'
 require SUPPORT_LIB + 'io'
+require 'pathname'
 
 $KCODE = 'u' if RUBY_VERSION < "1.9"
 
@@ -192,18 +193,22 @@ module TextMate
       private
 
       def fix_links_to_unsaved(str)
+        return str unless ENV.has_key?("TM_FILE_IS_UNTITLED") || ENV.has_key?("TM_ORIG_FILEPATH")
+
+        path  = Pathname.new(ENV['TM_FILEPATH'])
+        paths = [ e_url(path.realpath.to_s), path.realpath, e_url(ENV['TM_FILEPATH']), ENV['TM_FILEPATH'] ]
+        names = [ path.realpath, ENV['TM_FILEPATH'], path.basename, File.basename(ENV['TM_FILEPATH']) ]
+
+        pathRegexp = Regexp.new(paths.map { |path| Regexp.escape("file://#{path}") }.join('|'))
+        nameRegexp = Regexp.new(names.map { |name| Regexp.escape(name) }.join('|'))
+
+        str = str.dup
         if ENV.has_key? "TM_FILE_IS_UNTITLED"
-          str = str.dup
-          str.gsub!("url=file://#{e_url ENV['TM_FILEPATH']}", "uuid=#{ENV['TM_DOCUMENT_UUID']}")
-          str.gsub!("url=file://#{ENV['TM_FILEPATH']}",       "uuid=#{ENV['TM_DOCUMENT_UUID']}")
-          str.gsub!(ENV['TM_FILEPATH'],                       ENV['TM_DISPLAYNAME'])
-          str.gsub!(ENV['TM_FILENAME'],                       ENV['TM_DISPLAYNAME'])
+          str.gsub!(pathRegexp, "uuid=#{ENV['TM_DOCUMENT_UUID']}")
+          str.gsub!(nameRegexp, ENV['TM_DISPLAYNAME'])
         elsif ENV.has_key? "TM_ORIG_FILEPATH"
-          str = str.dup
-          str.gsub!("url=file://#{e_url ENV['TM_FILEPATH']}", "url=file://#{e_url ENV['TM_ORIG_FILEPATH']}")
-          str.gsub!("url=file://#{ENV['TM_FILEPATH']}",       "url=file://#{e_url ENV['TM_ORIG_FILEPATH']}")
-          str.gsub!(ENV['TM_FILEPATH'],                       ENV['TM_ORIG_FILEPATH'])
-          str.gsub!(ENV['TM_FILENAME'],                       ENV['TM_ORIG_FILENAME'])
+          str.gsub!(pathRegexp, "url=file://#{e_url ENV['TM_ORIG_FILEPATH']}")
+          str.gsub!(nameRegexp, ENV['TM_ORIG_FILENAME'])
         end
         str
       end
