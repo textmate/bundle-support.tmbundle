@@ -200,7 +200,7 @@ module TextMate
         names = [ path.realpath, ENV['TM_FILEPATH'], path.basename, File.basename(ENV['TM_FILEPATH']) ]
 
         pathRegexp = Regexp.new(paths.map { |path| Regexp.escape("file://#{path}") }.join('|'))
-        nameRegexp = Regexp.new(names.map { |name| Regexp.escape(name) }.join('|'))
+        nameRegexp = Regexp.new(names.map { |name| Regexp.escape(name.to_s) }.join('|'))
 
         str = str.dup
         if ENV.has_key? "TM_FILE_IS_UNTITLED"
