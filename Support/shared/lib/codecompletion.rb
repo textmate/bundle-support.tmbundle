@@ -316,6 +316,7 @@ class TextmateCompletionsPlist
   
   def to_ary
     return self.choices if self.format == :array
+    return [] unless self.choices
     return self.choices.map{|c|c['title'] || c['match'] || c['display']}
   end
   def to_hash
