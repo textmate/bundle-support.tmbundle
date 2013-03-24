@@ -188,6 +188,7 @@ module TextMate
         if options[:version_regex] =~ (out + err)
           return (out + err).sub(options[:version_regex], options[:version_replace])
         end
+        executable
       end
 
       private
