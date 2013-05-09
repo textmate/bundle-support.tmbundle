@@ -97,6 +97,7 @@ module PTree # Process Tree Construction
   end
 
   def traverse(tree, &block)
+    return if tree.nil?
     tree[:children].each { |child| traverse(child, &block) }
     block.call(tree)
   end
