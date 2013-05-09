@@ -63,18 +63,18 @@ require ENV['TM_SUPPORT_PATH'] + '/lib/io'
 require 'fcntl'
 
 module PTree # Process Tree Construction
-    module_function
+  module_function
 
-    def build
-        list = %x{ps -axww -o "pid,ppid,command="}.sub(/^.*$\n/, '')
+  def build
+    list = %x{ps -axww -o "pid,ppid,command="}.sub(/^.*$\n/, '')
 
     all_nodes = { }
     all_nodes[0] = { :pid => 0, :cmd => 'System Startup', :children => [ ] }
 
-        list.each do |line|
-            abort "Syntax error: #{line}" unless line =~ /^\s*(\d+)\s+(\d+)\s+(.*)$/
+    list.each do |line|
+      abort "Syntax error: #{line}" unless line =~ /^\s*(\d+)\s+(\d+)\s+(.*)$/
       all_nodes[$1.to_i] = { :pid => $1.to_i, :ppid => $2.to_i, :cmd => $3, :children => [ ] }
-        end
+    end
 
     all_nodes.each do |pid, process|
       next if pid == 0
@@ -82,54 +82,54 @@ module PTree # Process Tree Construction
       all_nodes[process[:ppid]][:children] << process
     end
 
-        all_nodes[0]
+    all_nodes[0]
+  end
+
+  def find(tree, pid)
+    return tree if tree[:pid] == pid
+
+    tree[:children].each do |child|
+      res = find(child, pid)
+      return res unless res.nil?
     end
 
-    def find(tree, pid)
-        return tree if tree[:pid] == pid
+    nil
+  end
 
-        tree[:children].each do |child|
-            res = find(child, pid)
-            return res unless res.nil?
-        end
-
-        nil
-    end
-
-    def traverse(tree, &block)
-        tree[:children].each { |child| traverse(child, &block) }
-        block.call(tree)
-    end
+  def traverse(tree, &block)
+    tree[:children].each { |child| traverse(child, &block) }
+    block.call(tree)
+  end
 end
 
 def pid_exists?(pid)
-    %x{ps >/dev/null -xp #{pid}}
-    $? == 0
+  %x{ps >/dev/null -xp #{pid}}
+  $? == 0
 end
 
 def kill_and_wait(pid)
-    begin
-        Process.kill("INT", pid)
-        20.times { return unless pid_exists?(pid); sleep 0.02 }
-        Process.kill("TERM", pid)
-        20.times { return unless pid_exists?(pid); sleep 0.02 }
-        Process.kill("KILL", pid)
-    rescue
-        # process doesn't exist anymore
-    end
+  begin
+    Process.kill("INT", pid)
+    20.times { return unless pid_exists?(pid); sleep 0.02 }
+    Process.kill("TERM", pid)
+    20.times { return unless pid_exists?(pid); sleep 0.02 }
+    Process.kill("KILL", pid)
+  rescue
+    # process doesn't exist anymore
+  end
 end
 
 def setup_kill_handler(pid, &block)
-    Signal.trap("USR1") do
-        did_kill = false
-        PTree.traverse(PTree.find(PTree.build, pid)) do |node|
-            if !did_kill && pid_exists?(node[:pid])
-                block.call("^C: #{node[:cmd]} (pid: #{node[:pid]})\n", :err)
-                kill_and_wait(node[:pid])
-                did_kill = true
-            end
-        end
-	end
+  Signal.trap("USR1") do
+    did_kill = false
+    PTree.traverse(PTree.find(PTree.build, pid)) do |node|
+      if !did_kill && pid_exists?(node[:pid])
+        block.call("^C: #{node[:cmd]} (pid: #{node[:pid]})\n", :err)
+        kill_and_wait(node[:pid])
+        did_kill = true
+      end
+    end
+  end
 end
 
 module TextMate
