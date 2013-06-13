@@ -72,11 +72,12 @@ module TextMate
                    :verb              => "Running",
                    :noun              => ENV['TM_DISPLAYNAME'],
                    :env               => nil,
+                   :chdir             => ENV['TM_PROJECT_DIRECTORY'] || ENV['TM_DIRECTORY'] || ENV['HOME'],
                    :script_args       => [],
                    :use_hashbang      => true,
                    :controls          => {}}
         
-        passthrough_options = [:env, :input]
+        passthrough_options = [:env, :input, :chdir]
 
         options[:bootstrap] = ENV["TM_BUNDLE_SUPPORT"] + "/bin/bootstrap.sh" unless ENV["TM_BUNDLE_SUPPORT"].nil?
 

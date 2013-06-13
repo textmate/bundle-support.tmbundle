@@ -162,7 +162,7 @@ module TextMate
           io.flatten.each { |fd| fd.close }
 
           options[:env].each { |k,v| ENV[k] = v } unless options[:env].nil?
-
+          Dir.chdir(options[:chdir]) if options.has_key?(:chdir) and File.directory?(options[:chdir])
           exec(*cmd.compact)
         }
 
