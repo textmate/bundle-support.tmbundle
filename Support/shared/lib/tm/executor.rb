@@ -110,7 +110,7 @@ module TextMate
             if [:err, :out].include?(type) and not filtered_str.nil?
               io << fix_links_to_unsaved(filtered_str)
             else
-              str = linkify_file_references(str)
+              str = linkify_file_references(str, options[:chdir])
               str = "<span class=\"err\">#{str}</span>" if type == :err
               io << str
             end
@@ -215,8 +215,8 @@ module TextMate
         str
       end
 
-      def linkify_file_references(line)
-        dirs = [ '.', ENV['TM_PROJECT_DIRECTORY'] ]
+      def linkify_file_references(line, dir)
+        dirs = [ dir, ENV['TM_PROJECT_DIRECTORY'] ]
         if line =~ /^(.*?)(:(?:(\d+):)?(?:(\d+):)?)\s*(.*?)$/ and not $1.nil?
           file, prefix, lineno, column, message = $1, $2, $3, $4, $5
           path = dirs.map{ |dir| File.expand_path(file, dir) }.find{ |path| File.file? path }
