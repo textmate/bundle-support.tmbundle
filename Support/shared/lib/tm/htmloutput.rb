@@ -84,7 +84,8 @@ module TextMate
         themes = collect_themes
         
         active_theme = find_theme(themes, saved_theme) || find_theme(themes, 'bright')
-        
+        abort "No web preview theme found.\nMake sure that the Themes bundle is enabled in Preferences → Bundles." if active_theme.nil?
+
         support_path = ENV['TM_SUPPORT_PATH']
 
         ERB.new(HTMLOUTPUT_TEMPLATE, 0, '%-<>').result(binding)
