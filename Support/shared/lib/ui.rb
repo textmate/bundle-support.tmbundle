@@ -71,8 +71,8 @@ module TextMate
         string = $1 * 2 + $2 * 2 + $3 * 2 if string =~ /^(.)(.)(.)$/
         def_col = ' default color {' + string.scan(/../).map { |i| i.hex * 257 }.join(",") + '}'
         begin
-          col = %x{osascript -e 'tell app "AppleScript Runner" to activate' \
-                             -e 'tell app "AppleScript Runner" to choose color#{def_col}'}
+          col = %x{osascript -e 'tell app "TextMate" to activate' \
+                             -e 'tell app "TextMate" to choose color#{def_col}'}
         rescue
           return col = string
         end
