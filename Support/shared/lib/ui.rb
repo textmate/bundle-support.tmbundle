@@ -55,39 +55,23 @@ module TextMate
         buttons[button_index]
       end
 
-      # For use in request_color
-      def reactivate
-        tm = ENV['TM_APP_PATH'] || "TextMate"
-        `osascript &>/dev/null -e 'tell app "SystemUIServer" to activate'; open -a '#{tm}'`
-      end
-
       # show the system color picker and return a hex-format color (#RRGGBB).
       # If the input string is a recognizable hex string, the default color will be set to it.
       def request_color(string = nil)
-        original_color = string.dup
         string = '#999' unless string.to_s.match(/#?[0-9A-F]{3,6}/i)
         color  = string
         prefix, string = string.match(/(#?)([0-9A-F]{3,6})/i)[1,2]
         string = $1 * 2 + $2 * 2 + $3 * 2 if string =~ /^(.)(.)(.)$/
         def_col = ' default color {' + string.scan(/../).map { |i| i.hex * 257 }.join(",") + '}'
-        begin
-          col = %x{osascript -e 'tell app "AppleScript Runner" to activate' \
-                             -e 'tell app "AppleScript Runner" to choose color#{def_col}'}
-        rescue
-          return col = string
-        end
-        reactivate
-        exit 200 if col.empty? # user cancelled -- when it happens, an exception is written to stderr
+        col = `osascript 2>/dev/null -e 'tell app "TextMate" to choose color#{def_col}'`
+        return nil if col == "" # user cancelled -- when it happens, an exception is written to stderr
         col = col.scan(/\d+/).map { |i| "%02X" % (i.to_i / 257) }.join("")
-        # Add : # ; back if they were in the input
-        m = original_color.match(/(:? ?).*?( ?;?)$/)
-        color = m[1] + prefix
-        suffix = m[2].empty? ? "" : "$0" + m[2]
-  
-        if /(.)\1(.)\2(.)\3/.match(col)
-          color << $1 + $2 + $3 + suffix
+    
+        color = prefix
+        if /(.)\1(.)\2(.)\3/.match(col) then
+          color << $1 + $2 + $3
         else
-          color << col + suffix
+          color << col
         end
         return color
       end
