@@ -96,7 +96,7 @@ module TextMate
         version = parse_version(args[0], options)
         
         tm_error_fd_read, tm_error_fd_write = ::IO.pipe
-        tm_error_fd_read.fcntl(Fcntl::F_SETFD, 1)
+        tm_error_fd_read.fcntl(Fcntl::F_SETFD, Fcntl::FD_CLOEXEC)
         ENV['TM_ERROR_FD'] = tm_error_fd_write.to_i.to_s
 
         options[:script_args].each { |arg| args << arg }

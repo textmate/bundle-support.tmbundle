@@ -188,7 +188,7 @@ class UserScript
     end
     def run(&block)
       rd, wr = IO.pipe
-      rd.fcntl(Fcntl::F_SETFD, 1)
+      rd.fcntl(Fcntl::F_SETFD, Fcntl::FD_CLOEXEC)
       ENV['TM_ERROR_FD'] = wr.to_i.to_s
       if @saved
         cmd = filter_cmd([executable, args, e_sh(@path), ARGV.to_a ].flatten) 
