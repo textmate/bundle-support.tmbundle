@@ -8,7 +8,7 @@
 # Nice features include:
 #  • Automatic Fancy HTML headers
 #  • The environment variable TM_ERROR_FD will contain a file descriptor to which HTML-formatted
-#    exceptions can be written.
+#    exceptions can be written (requires :create_error_pipe => true).
 #
 # Executor runs best if TextMate.save_if_untitled is called first.  Doing so ensures
 # that TM_FILEPATH contains the path to the contents of your current document, even if the
@@ -28,7 +28,7 @@
 # return nil and Executor will apply basic formatting for you, including adding links for lines
 # starting with ‘«file»[:«line»[:«column»:]]«message»’.
 #
-# TextMate::Executor.run also accepts seven optional named arguments.
+# TextMate::Executor.run also accepts eight optional named arguments.
 #   :version_args are arguments that will be passed to the executable to generate a version string for use as the page's subtitle.
 #   :version_regex is a regular expression to which the resulting version string is passed.
 #     The subtitle of the Executor.run output is generated from this match.  By default, this just takes the first line.
@@ -41,6 +41,8 @@
 #     be appended after the path to the script in the arguments to the interpreter.
 #   :use_hashbang Tells Executor wether to override it's first argument with the current file's #! if that exists.
 #     The default is “true”.  Set it to “false” to prevent the hash bang from overriding the interpreter.
+#   :create_error_pipe Tells Executor to create a pipe which the child process can use to write raw HTML to.
+#     The default is “false”. The file descriptor can be obtained via the TM_ERROR_FD environment variable
 
 SUPPORT_LIB = ENV['TM_SUPPORT_PATH'] + '/lib/'
 require SUPPORT_LIB + 'tm/process'
@@ -75,6 +77,7 @@ module TextMate
                    :chdir             => ENV['TM_PROJECT_DIRECTORY'] || ENV['TM_DIRECTORY'] || ENV['HOME'],
                    :script_args       => [],
                    :use_hashbang      => true,
+                   :create_error_pipe => false,
                    :controls          => {}}
         
         passthrough_options = [:env, :input, :chdir]
@@ -95,9 +98,12 @@ module TextMate
         
         version = parse_version(args[0], options)
         
-        tm_error_fd_read, tm_error_fd_write = ::IO.pipe
-        tm_error_fd_read.fcntl(Fcntl::F_SETFD, Fcntl::FD_CLOEXEC)
-        ENV['TM_ERROR_FD'] = tm_error_fd_write.to_i.to_s
+        tm_error_fd_read, tm_error_fd_write = -1, -1
+        if options[:create_error_pipe]
+          tm_error_fd_read, tm_error_fd_write = ::IO.pipe
+          tm_error_fd_read.fcntl(Fcntl::F_SETFD, Fcntl::FD_CLOEXEC)
+          ENV['TM_ERROR_FD'] = tm_error_fd_write.to_i.to_s
+        end
 
         options[:script_args].each { |arg| args << arg }
         
@@ -133,11 +139,13 @@ module TextMate
           end
           finish = Time.now
 
-          tm_error_fd_write.close
-          error = tm_error_fd_read.read
-          tm_error_fd_read.close
+          if tm_error_fd_read != -1 && tm_error_fd_write != -1
+            tm_error_fd_write.close
+            error = tm_error_fd_read.read
+            tm_error_fd_read.close
+            io << fix_links_to_unsaved(error)
+          end
 
-          io << fix_links_to_unsaved(error)
           io << '<div class="controls"><a href="#" onclick="copyOutput(document.getElementById(\'_executor_output\'))">copy output</a>'
           
           options[:controls].each_key {|key| io << " | <a href=\"javascript:TextMate.system('#{options[:controls][key]}')\">#{key}</a>"}
