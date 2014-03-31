@@ -18,21 +18,15 @@ def my_popen3(*cmd) # returns [stdin, stdout, strerr, pid]
   pr = IO::pipe
   pe = IO::pipe
   
+  [ pw, pr, pe ].flatten.each { |fd| fd.fcntl(Fcntl::F_SETFD, Fcntl::FD_CLOEXEC) }
+
   # F_SETOWN = 6, ideally this would be under Fcntl::F_SETOWN
   pw[0].fcntl(6, ENV['TM_PID'].to_i) if ENV.has_key? 'TM_PID'
   
   pid = fork{
-    pw[1].close
     STDIN.reopen(pw[0])
-    pw[0].close
-
-    pr[0].close
     STDOUT.reopen(pr[1])
-    pr[1].close
-
-    pe[0].close
     STDERR.reopen(pe[1])
-    pe[1].close
 
     tm_interactive_input = SUPPORT_LIB + '/tm_interactive_input.dylib'
     if (File.exists? tm_interactive_input) 

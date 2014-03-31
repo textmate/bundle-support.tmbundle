@@ -151,6 +151,7 @@ module TextMate
 
         io = []
         3.times { io << ::IO::pipe }
+        io.flatten.each { |fd| fd.fcntl(Fcntl::F_SETFD, Fcntl::FD_CLOEXEC) }
 
         pid = fork {
           at_exit { exit! }
@@ -158,8 +159,6 @@ module TextMate
           STDIN.reopen(io[0][0])
           STDOUT.reopen(io[1][1])
           STDERR.reopen(io[2][1])
-
-          io.flatten.each { |fd| fd.close }
 
           options[:env].each { |k,v| ENV[k] = v } unless options[:env].nil?
           Dir.chdir(options[:chdir]) if options.has_key?(:chdir) and File.directory?(options[:chdir])
