@@ -126,7 +126,7 @@ module TextMate
       # (with a new key +index+ added, which is the index of the +choice+ into the +choices+ array)
       # and the result of the block inserted as a snippet
       def complete(choices, options = {}, &block) #  :yields: choice
-        pid = fork do
+        fork do
           STDOUT.reopen(open('/dev/null'))
           STDERR.reopen(open('/dev/null'))
 
