@@ -62,47 +62,6 @@
 require ENV['TM_SUPPORT_PATH'] + '/lib/io'
 require 'fcntl'
 
-module PTree # Process Tree Construction
-  module_function
-
-  def build
-    list = %x{ps -axww -o "pid,ppid,command="}.sub(/^.*$\n/, '')
-
-    all_nodes = { }
-    all_nodes[0] = { :pid => 0, :cmd => 'System Startup', :children => [ ] }
-
-    list.each do |line|
-      abort "Syntax error: #{line}" unless line =~ /^\s*(\d+)\s+(\d+)\s+(.*)$/
-      all_nodes[$1.to_i] = { :pid => $1.to_i, :ppid => $2.to_i, :cmd => $3, :children => [ ] }
-    end
-
-    all_nodes.each do |pid, process|
-      next if pid == 0
-      abort "Inconsistent Process Tree: parent (#{process[:ppid]}) for pid #{pid} does not exist" unless all_nodes.has_key? process[:ppid]
-      all_nodes[process[:ppid]][:children] << process
-    end
-
-    all_nodes[0]
-  end
-
-  def find(tree, pid)
-    return tree if tree[:pid] == pid
-
-    tree[:children].each do |child|
-      res = find(child, pid)
-      return res unless res.nil?
-    end
-
-    nil
-  end
-
-  def traverse(tree, &block)
-    return if tree.nil?
-    tree[:children].each { |child| traverse(child, &block) }
-    block.call(tree)
-  end
-end
-
 def pid_exists?(pid)
   %x{ps >/dev/null -xp #{pid}}
   $? == 0
@@ -122,13 +81,10 @@ end
 
 def setup_kill_handler(pid, &block)
   Signal.trap("USR1") do
-    did_kill = false
-    PTree.traverse(PTree.find(PTree.build, pid)) do |node|
-      if !did_kill && pid_exists?(node[:pid])
-        block.call("^C: #{node[:cmd]} (pid: #{node[:pid]})\n", :err)
-        kill_and_wait(node[:pid])
-        did_kill = true
-      end
+    cmd = %x{/bin/ps -wwp #{pid} -o "command="}.chomp
+    if $? == 0
+      block.call("^C: #{cmd} (pid: #{pid})\n", :err)
+      kill_and_wait(pid)
     end
   end
 end
