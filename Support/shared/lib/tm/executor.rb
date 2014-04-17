@@ -227,7 +227,7 @@ module TextMate
         dirs = [ dir, ENV['TM_PROJECT_DIRECTORY'] ]
         if line =~ /^(.*?)(:(?:(\d+):)?(?:(\d+):)?)\s*(.*?)$/ and not $1.nil?
           file, prefix, lineno, column, message = $1, $2, $3, $4, $5
-          path = dirs.map{ |dir| File.expand_path(file, dir) }.find{ |path| File.file? path }
+          path = dirs.map{ |dir| File.expand_path(file, dir) rescue "#{dir}/#{file}" }.find{ |path| File.file? path }
           unless path.nil?
             relative = path
 
