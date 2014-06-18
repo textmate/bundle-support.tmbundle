@@ -1,0 +1,8 @@
+#!/bin/sh
+
+if [[ -e '/System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/bin/ruby' ]]
+	then
+        exec /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/bin/ruby "$@"
+    else
+    	"$DIALOG" alert --alertStyle warning --title 'Ruby 1.8 Required' --body 'Support for Yosemite coming soon' --button1 OK &>/dev/null
+fi
