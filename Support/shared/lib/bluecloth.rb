@@ -1,4 +1,4 @@
-#!/System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/bin/ruby
+#!/usr/bin/env ruby18
 # 
 # Bluecloth is a Ruby implementation of Markdown, a text-to-HTML conversion
 # tool.

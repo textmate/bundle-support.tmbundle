@@ -1,4 +1,4 @@
-#!/System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/bin/ruby
+#!/usr/bin/env ruby18
 #
 # Program to check and fix nested blocks.
 # By Sune Foldager, 2005.
