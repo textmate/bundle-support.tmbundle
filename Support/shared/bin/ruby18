@@ -1,8 +1,37 @@
 #!/bin/sh
 
-if [[ -e '/System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/bin/ruby' ]]
-	then
-        exec /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/bin/ruby "$@"
-    else
-    	"$DIALOG" alert --alertStyle warning --title 'Ruby 1.8 Required' --body 'Support for Yosemite coming soon' --button1 OK &>/dev/null
+# This script is designed for backwards compatibility with bundle items that
+# were designed for ruby 1.8. It passes the input along to ruby 1.8 if already
+# installed or if needed downloads and installs a copy for TextMates exclusive
+# use. This does not affect the system ruby version or any other part of the
+# system.
+
+if [[ -e /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/bin/ruby ]]; then
+    exec /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/bin/ruby "$@"
+elif [[ -e ~/Library/Application\ Support/TextMate/Ruby/1.8/bin/ruby ]]; then
+    exec ~/Library/Application\ Support/TextMate/Ruby/1.8/bin/ruby "$@"
+else
+	token=$("$DIALOG" -ap '{ title = "Preparing Ruby"; summary = "Please wait while ruby 1.8 is prepared for use…"; isIndeterminate = 1; }' "ProgressDialog.nib")
+	"$DIALOG" -t "$token" -p '{ progressAnimate = 1; }'
+	
+	# Create directory for installation
+	mkdir -p ~/Library/Application\ Support/TextMate/Ruby
+	cd ~/Library/Application\ Support/TextMate/Ruby
+	
+	# Download and decompress
+	/usr/bin/curl -fsSL --connect-timeout 10 http://archive.textmate.org/ruby/ruby_1.8.tbz 2>> ~/Library/Logs/TextMate\ Ruby\ Preparation.log | /usr/bin/tar xz -m 2>> ~/Library/Logs/TextMate\ Ruby\ Preparation.log
+
+	"$DIALOG" -x "$token"
+	
+	if [[ -e ~/Library/Application\ Support/TextMate/Ruby/1.8/bin/ruby ]]; then
+		# Remove error log
+		unlink ~/Library/Logs/TextMate\ Ruby\ Preparation.log
+		
+		# Return to previous directory
+		cd - &>/dev/null
+		
+	    exec ~/Library/Application\ Support/TextMate/Ruby/1.8/bin/ruby "$@"
+	else
+		"$DIALOG" alert --alertStyle warning --title 'Ruby 1.8 Error' --body 'Error preparing ruby, please try again or contact support if issue persists.' --button1 OK &>/dev/null
+	fi
 fi
