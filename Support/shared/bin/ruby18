@@ -9,9 +9,7 @@
 if [[ -e /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/bin/ruby ]]; then
 	exec /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/bin/ruby "$@"
 elif [[ -e ~/Library/Application\ Support/TextMate/Ruby/1.8.7/bin/ruby ]]; then
-	export RB_HOME="$HOME/Library/Application Support/TextMate/Ruby/1.8.7"
-	export RUBYLIB="${RUBYLIB:-$RUBYLIB:}:$RB_HOME/lib/ruby/site_ruby/1.8:$RB_HOME/lib/ruby/site_ruby/1.8/i686-darwin13.3.0:$RB_HOME/lib/ruby/site_ruby:$RB_HOME/lib/ruby/vendor_ruby/1.8:$RB_HOME/lib/ruby/vendor_ruby/1.8/i686-darwin13.3.0:$RB_HOME/lib/ruby/vendor_ruby:$RB_HOME/lib/ruby/1.8:$RB_HOME/lib/ruby/1.8/i686-darwin13.3.0"
-	exec "$RB_HOME/bin/ruby" "$@"
+	exec "$HOME/Library/Application Support/TextMate/Ruby/1.8.7/bin/ruby" -r"$TM_SUPPORT_PATH/lib/ruby18_fix_loadpath.rb" "$@"
 else
 	token=$("$DIALOG" -ap '{ title = "Preparing Ruby"; summary = "Please wait while ruby 1.8 is prepared for use…"; isIndeterminate = 1; }' "ProgressDialog.nib")
 	"$DIALOG" -t "$token" -p '{ progressAnimate = 1; }'
