@@ -3,8 +3,8 @@ module TextMate
 		module_function
 		def to_html(str, options = { })
 			filters = [ ]
-			filters << '"${TM_MARKDOWN:-$TM_SUPPORT_PATH/bin/Markdown.pl}"' unless options[:no_markdown]
-			filters << '"${TM_SMARTYPANTS:-$TM_SUPPORT_PATH/bin/SmartyPants.pl}"' unless options[:no_smartypants]
+			filters << (ENV.has_key?('TM_MARKDOWN')    ? '$TM_MARKDOWN'    : '"$TM_SUPPORT_PATH/bin/Markdown.pl"')    unless options[:no_markdown]
+			filters << (ENV.has_key?('TM_SMARTYPANTS') ? '$TM_SMARTYPANTS' : '"$TM_SUPPORT_PATH/bin/SmartyPants.pl"') unless options[:no_smartypants]
 
 			return str if filters.empty?
 
