@@ -16,7 +16,7 @@ html_header() {
 		3)	export WINDOW_TITLE="$1"; export PAGE_TITLE="$2"; export SUB_TITLE="$3";;
 	esac
 
-	"${TM_RUBY:-ruby}" -r"$TM_SUPPORT_PATH/lib/web_preview.rb" <<-'RUBY'
+	ruby18 -r"$TM_SUPPORT_PATH/lib/web_preview.rb" <<-'RUBY'
 		puts html_head(
 			:window_title	=> ENV['WINDOW_TITLE'],
 			:page_title		=> ENV['PAGE_TITLE'],
