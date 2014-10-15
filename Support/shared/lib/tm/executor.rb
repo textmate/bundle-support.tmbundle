@@ -132,7 +132,9 @@ module TextMate
             raise "Bootstrap script is not executable." unless File.executable?(options[:bootstrap])
             args[0,0] = options[:bootstrap] # add the bootstrap script to the front of args
           end
-          
+
+          system(ENV['TM_MATE'], "--clear-mark=warning", "--clear-mark=error")
+
           start = Time.now
           process_output_wrapper(io) do
             TextMate::Process.run(args, process_options, &callback)
@@ -229,6 +231,12 @@ module TextMate
           file, prefix, lineno, column, message = $1, $2, $3, $4, $5
           path = dirs.map{ |dir| File.expand_path(file, dir) rescue "#{dir}/#{file}" }.find{ |path| File.file? path }
           unless path.nil?
+            unless lineno.nil?
+              args = [ "--line=#{lineno}", "--set-mark=#{message =~ /error/ ? 'error' : 'warning'}" ]
+              args << path if path != ENV['TM_FILEPATH'] || !ENV.has_key?('TM_FILE_IS_UNTITLED')
+              system(ENV['TM_MATE'], *args)
+            end
+
             relative = path
 
             parms =  [ ]
