@@ -283,6 +283,7 @@ HTML
   function press(evt) {
      if (evt.keyCode == 67 && evt.ctrlKey == true) {
        TextMate.system("kill -s USR1 #{::Process.pid};", null);
+       evt.preventDefault();
      }
   }
   
