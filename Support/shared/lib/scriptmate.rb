@@ -220,6 +220,7 @@ document.body.addEventListener('keydown', press, false);
 
 function copyOutput(link) {
   output = document.getElementById('_scriptmate_output').innerText;
+  output = output.replace(/(?:^| ) +/mg, function(match, offset, s) { return match.replace(/ /g, ' '); });
   cmd = TextMate.system('/usr/bin/pbcopy', function(){});
   cmd.write(output);
   cmd.close();

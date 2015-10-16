@@ -288,7 +288,7 @@ HTML
   }
   
   function copyOutput(element) {
-    output = element.innerText;
+    output = element.innerText.replace(/(?:^| ) +/mg, function(match, offset, s) { return match.replace(/ /g, ' '); });
     cmd = TextMate.system('/usr/bin/pbcopy', function(){});
     cmd.write(output);
     cmd.close();
