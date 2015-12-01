@@ -69,11 +69,11 @@ end
 
 def kill_and_wait(pid)
   begin
-    Process.kill("INT", pid)
+    Process.kill("-INT", pid)
     20.times { return unless pid_exists?(pid); sleep 0.02 }
-    Process.kill("TERM", pid)
+    Process.kill("-TERM", pid)
     20.times { return unless pid_exists?(pid); sleep 0.02 }
-    Process.kill("KILL", pid)
+    Process.kill("-KILL", pid)
   rescue
     # process doesn't exist anymore
   end
@@ -118,6 +118,7 @@ module TextMate
 
           options[:env].each { |k,v| ENV[k] = v } unless options[:env].nil?
           Dir.chdir(options[:chdir]) if options.has_key?(:chdir) and File.directory?(options[:chdir])
+          ::Process.setsid
           exec(*cmd.compact)
         }
 
