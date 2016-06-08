@@ -133,7 +133,7 @@ module TextMate
             args[0,0] = options[:bootstrap] # add the bootstrap script to the front of args
           end
 
-          system(ENV['TM_MATE'], "--clear-mark=warning", "--clear-mark=error")
+          system(ENV['TM_MATE'], "--clear-mark=note", "--clear-mark=warning", "--clear-mark=error")
 
           start = Time.now
           process_output_wrapper(io) do
