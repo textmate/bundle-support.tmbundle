@@ -3,6 +3,9 @@ module TextMate
 		module_function
 		def to_html(str, options = { })
 			filters = [ ]
+			if ENV.has_key?('TM_MARKDOWN_FILTER')
+				filters += ENV['TM_MARKDOWN_FILTER'].split(':').reject{ |s| s == '' }
+			end
 			filters << (ENV.has_key?('TM_MARKDOWN')    ? '$TM_MARKDOWN'    : '"$TM_SUPPORT_PATH/bin/Markdown.pl"')    unless options[:no_markdown]
 			filters << (ENV.has_key?('TM_SMARTYPANTS') ? '$TM_SMARTYPANTS' : '"$TM_SUPPORT_PATH/bin/SmartyPants.pl"') unless options[:no_smartypants]
 
