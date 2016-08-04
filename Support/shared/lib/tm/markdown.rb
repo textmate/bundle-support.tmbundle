@@ -6,8 +6,7 @@ module TextMate
 			if ENV.has_key?('TM_MARKDOWN_PRE_FILTER')
 				filters += ENV['TM_MARKDOWN_PRE_FILTER'].split(':').reject{ |s| s == '' }
 			end
-			filters << (ENV.has_key?('TM_MARKDOWN')    ? '$TM_MARKDOWN'    : '"$TM_SUPPORT_PATH/bin/Markdown.pl"')    unless options[:no_markdown]
-			filters << (ENV.has_key?('TM_SMARTYPANTS') ? '$TM_SMARTYPANTS' : '"$TM_SUPPORT_PATH/bin/SmartyPants.pl"') unless options[:no_smartypants]
+			filters << (ENV.has_key?('TM_MARKDOWN') ? '$TM_MARKDOWN' : '"$TM_SUPPORT_PATH/bin/Markdown.pl"') unless options[:no_markdown]
 			if ENV.has_key?('TM_MARKDOWN_POST_FILTER')
 				filters += ENV['TM_MARKDOWN_POST_FILTER'].split(':').reject{ |s| s == '' }
 			end
@@ -26,6 +25,4 @@ if $0 == __FILE__
 	include TextMate
 	puts Markdown.to_html("who's there?")
 	puts Markdown.to_html("who's there?", :no_markdown => true)
-	puts Markdown.to_html("who's there?", :no_smartypants => true)
-	puts Markdown.to_html("who's there?", :no_markdown => true, :no_smartypants => true)
 end
