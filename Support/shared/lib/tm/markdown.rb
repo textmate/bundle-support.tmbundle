@@ -23,6 +23,21 @@ end
 
 if $0 == __FILE__
 	include TextMate
-	puts Markdown.to_html("who's there?")
-	puts Markdown.to_html("who's there?", :no_markdown => true)
+
+	ENV.delete('TM_MARKDOWN')
+	ENV.delete('TM_MARKDOWN_PRE_FILTER')
+	ENV.delete('TM_MARKDOWN_POST_FILTER')
+	puts Markdown.to_html("Standard markdown processor") # => <p>Standard markdown processor</p>
+
+	ENV['TM_MARKDOWN'] = "rev"
+	puts Markdown.to_html("Custom markdown processor") # => rossecorp nwodkram motsuC
+
+	ENV.delete('TM_MARKDOWN')
+	ENV['TM_MARKDOWN_PRE_FILTER'] = "sed -e 's/ /   /g':rev"
+	ENV.delete('TM_MARKDOWN_POST_FILTER')
+	puts Markdown.to_html("multiple pre filters") # => <p>sretlif   erp   elpitlum</p>
+
+	ENV['TM_MARKDOWN_PRE_FILTER'] = "rev"
+	ENV['TM_MARKDOWN_POST_FILTER'] = "tr p '*'"
+	puts Markdown.to_html("pre and post filtered") # => <*>deretlif tso* dna er*</*>
 end
