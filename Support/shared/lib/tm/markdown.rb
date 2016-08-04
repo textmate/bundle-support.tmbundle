@@ -6,7 +6,7 @@ module TextMate
 			if ENV.has_key?('TM_MARKDOWN_PRE_FILTER')
 				filters += ENV['TM_MARKDOWN_PRE_FILTER'].split(':').reject{ |s| s == '' }
 			end
-			filters << (ENV.has_key?('TM_MARKDOWN') ? '$TM_MARKDOWN' : '"$TM_SUPPORT_PATH/bin/Markdown.pl"') unless options[:no_markdown]
+			filters << (ENV.has_key?('TM_MARKDOWN') ? '$TM_MARKDOWN' : '"$TM_SUPPORT_PATH/bin/Markdown.pl"')
 			if ENV.has_key?('TM_MARKDOWN_POST_FILTER')
 				filters += ENV['TM_MARKDOWN_POST_FILTER'].split(':').reject{ |s| s == '' }
 			end
