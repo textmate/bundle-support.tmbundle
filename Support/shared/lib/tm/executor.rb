@@ -254,17 +254,20 @@ module TextMate
             end
 
             info = relative.gsub('&', '&amp;').gsub('<', '&lt;').gsub('"', '&quot;')
-            return "<a href=\"txmt://open?#{parms.join '&'}\" title=\"#{info}\">#{file + prefix}</a> #{htmlize message}<br>\n"
+            return "<div class='line'><a href=\"txmt://open?#{parms.join '&'}\" title=\"#{info}\">#{file + prefix}</a> #{htmlize message}<br></div>\n"
           end
         end
 
-        return htmlize(fix_links_to_unsaved(line))
+        return "<div class='line'>" + htmlize(fix_links_to_unsaved(line)) + "</div>\n"
       end
 
       def process_output_wrapper(io)
         io << <<-HTML
 
-<script type="text/javascript" charset="utf-8">document.body.addEventListener("keydown", press, false);</script>
+<script type="text/javascript" charset="utf-8">
+  document.body.addEventListener("keydown", press, false);
+  document.body.addEventListener("click", click)
+</script>
 
 <!-- first box containing version info and script output -->
 <pre>
@@ -287,6 +290,18 @@ HTML
      }
   }
   
+  function click(evt) {
+    if (event.target.tagName == 'A') {
+      var line = event.target;
+      while (line && !line.classList.contains('line')) line = line.parentElement;
+      if (line) {
+        Array.from(document.getElementsByClassName('line current')).forEach(function (el) {
+          el.classList.remove('current');
+        });
+        line.classList.add('current');
+      }
+    }
+  }
   function copyOutput(element) {
     output = element.innerText.replace(/(?:^| ) +/mg, function(match, offset, s) { return match.replace(/ /g, ' '); });
     cmd = TextMate.system('/usr/bin/pbcopy', function(){});
@@ -344,7 +359,11 @@ HTML
       -khtml-nbsp-mode: space;
       -khtml-line-break: after-white-space;
     }
-
+    
+    div#_executor_output .line.current {
+      background: rgba(255, 240, 80, 0.25);
+      outline: 1px solid rgba(255, 240, 80, 0.25);
+    }
     div#_executor_output .out {  
 
     }
