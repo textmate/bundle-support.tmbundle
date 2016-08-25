@@ -39,4 +39,9 @@ module TextMate
     print out if out
     exit 207
   end
+
+  def exit_insert_snippet_no_indent(out = nil)
+    print out if out
+    exit 208
+  end
 end
