@@ -43,7 +43,7 @@ exit_create_new_document ()	{ echo -n "$1";     exit 207; }
 # force TM to refresh current file and project drawer
 rescan_project () { true; }
 
-# use this as a filter (|pre) when you want 
+# use this as a filter (|pre) when you want
 # raw output to show as such in the HTML output
 pre () {
 	echo -n '<pre style="word-wrap: break-word;">'
