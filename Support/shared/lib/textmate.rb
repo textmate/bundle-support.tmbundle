@@ -84,25 +84,6 @@ module TextMate
       end
     end
     
-    def min_support(version)
-      actual_version = ::IO.read(ENV['TM_SUPPORT_PATH'] + '/version').to_i
-      if actual_version < version then
-		require "#{ENV['TM_SUPPORT_PATH']}/lib/ui"		
-        TextMate::UI.request_confirmation(:title => "Support Folder is Outdated", :prompt => "Your version of the shared support folder is too old for this action to run.\n\nYou need version #{version} but only have #{actual_version}.", :button1 => "More Info") do
-          help_url = "file://#{e_url(self.app_path + '/Contents/Resources/English.lproj/TextMate Help Book/bundles.html')}#support_folder"
-          %x{ open #{e_sh help_url} }
-          # # unfortuantely the help viewer ignores the fragment specifier of the URL
-          # %x{ osascript <<'APPLESCRIPT'
-          # 	tell app "Help Viewer"
-          # 	  handle url "#{e_as help_url}"
-          # 	  activate
-          # 	end tell	
-          # }
-        end
-        raise SystemExit
-      end
-    end
-
     def rescan_project
     end
   end
