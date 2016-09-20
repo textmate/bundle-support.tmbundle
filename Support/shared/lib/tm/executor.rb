@@ -232,7 +232,7 @@ module TextMate
           path = dirs.map{ |dir| File.expand_path(file, dir) rescue "#{dir}/#{file}" }.find{ |path| File.file? path }
           unless path.nil?
             unless lineno.nil?
-              value = (message =~ /^(error|warning|note):/ ? $1 : "warning") + ":#{message}"
+              value = (message =~ /^\s*(error|warning|note):/ ? $1 : "warning") + ":#{message}"
               args = [ "--line=#{lineno}:#{column || '1'}", "--set-mark=#{value}" ]
               args << path if path != ENV['TM_FILEPATH'] || !ENV.has_key?('TM_FILE_IS_UNTITLED')
               system(ENV['TM_MATE'], *args)
