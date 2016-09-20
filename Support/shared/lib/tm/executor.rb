@@ -23,7 +23,7 @@
 #   TextMate::Executor.run(ENV['TM_SHELL'] || ENV['SHELL'] || 'bash', ENV['TM_FILEPATH']) do |str, type|
 #     "<span class=\"stderr\">#{htmlize(str)}</span>" if type == :out
 #   end
-# 
+#
 # Your block will be called with type :out or :err.  If you don't want to handle a particular type,
 # return nil and Executor will apply basic formatting for you, including adding links for lines
 # starting with ‘«file»[:«line»[:«column»:]]«message»’.
@@ -79,7 +79,7 @@ module TextMate
                    :use_hashbang      => true,
                    :create_error_pipe => false,
                    :controls          => {}}
-        
+
         passthrough_options = [:env, :input, :chdir]
 
         options[:bootstrap] = ENV["TM_BUNDLE_SUPPORT"] + "/bin/bootstrap.sh" unless ENV["TM_BUNDLE_SUPPORT"].nil?
@@ -95,9 +95,9 @@ module TextMate
         # This array could begin with /usr/bin/env and I'm not sure what require_cmd
         # should do in that case -- Alex Ross
         TextMate.require_cmd(args[0]) unless args[0].is_a?(Array)
-        
+
         version = parse_version(args[0], options)
-        
+
         tm_error_fd_read, tm_error_fd_write = -1, -1
         if options[:create_error_pipe]
           tm_error_fd_read, tm_error_fd_write = ::IO.pipe
@@ -106,11 +106,11 @@ module TextMate
         end
 
         options[:script_args].each { |arg| args << arg }
-        
+
         TextMate::HTMLOutput.show(:title => "#{options[:verb]} “#{options[:noun]}”…", :sub_title => version, :html_head => script_style_header) do |io|
-          
+
           io << '<div class="executor">'
-          
+
           callback = proc do |str, type|
             filtered_str = block.call(str,type) if [:err, :out].include? type
             if [:err, :out].include?(type) and not filtered_str.nil?
@@ -122,12 +122,12 @@ module TextMate
             end
             sleep(0.001)
           end
-          
+
           process_options = { }
           passthrough_options.each { |key| process_options[key] = options[key] if options.has_key?(key) }
-          
+
           io << "<!-- » #{args[0,args.length-1].join(" ")} #{ENV["TM_DISPLAYNAME"]} -->"
-          
+
           if options.has_key?(:bootstrap) and File.exists?(options[:bootstrap])
             raise "Bootstrap script is not executable." unless File.executable?(options[:bootstrap])
             args[0,0] = options[:bootstrap] # add the bootstrap script to the front of args
@@ -149,11 +149,11 @@ module TextMate
           end
 
           io << '<div class="controls"><div id="copytime"></div>&nbsp;&nbsp;<a href="#" onclick="copyOutput(document.getElementById(\'_executor_output\'))">copy output</a>'
-          
+
           options[:controls].each_key {|key| io << " | <a href=\"javascript:TextMate.system('#{options[:controls][key]}')\">#{key}</a>"}
-          
+
           io << '</div>'
-          
+
 
           io << "<div id=\"exception_report\" class=\"framed\">"
           if $?.exited?
@@ -166,7 +166,7 @@ module TextMate
           io << '</div></div>'
         end
       end
-      
+
       def make_project_master_current_document
         if (ENV.has_key?("TM_PROJECT_DIRECTORY") and ENV.has_key?("TM_PROJECT_MASTER") and not ENV["TM_PROJECT_MASTER"] == "")
           proj_dir    = ENV["TM_PROJECT_DIRECTORY"]
@@ -278,7 +278,7 @@ HTML
         </div></pre>
         HTML
       end
-      
+
       def script_style_header
         return <<-HTML
 <!-- executor javascripts -->
@@ -289,7 +289,7 @@ HTML
        evt.preventDefault();
      }
   }
-  
+
   function click(evt) {
     if (event.target.tagName == 'A') {
       var line = event.target;
@@ -309,7 +309,7 @@ HTML
     cmd.close();
     document.getElementById('copytime').innerText = 'output copied to clipboard';
   }
-  
+
   </script>
   <!-- end javascript -->
   <style type="text/css">
@@ -359,24 +359,24 @@ HTML
       -khtml-nbsp-mode: space;
       -khtml-line-break: after-white-space;
     }
-    
+
     div#_executor_output .line.current {
       background: rgba(255, 240, 80, 0.25);
       outline: 1px solid rgba(255, 240, 80, 0.25);
     }
-    div#_executor_output .out {  
+    div#_executor_output .out {
 
     }
-    div#_executor_output .err {  
+    div#_executor_output .err {
       color: red;
     }
     div#_executor_output .test {
       font-weight: bold;
     }
-    div#_executor_output .test.ok {  
+    div#_executor_output .test.ok {
       color: green;
     }
-    div#_executor_output .test.fail {  
+    div#_executor_output .test.fail {
       color: red;
     }
     div#exception_report pre.snippet {
