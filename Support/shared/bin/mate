@@ -1,2 +1,2 @@
 #!/bin/sh
-exec "${TM_MATE:-$("$TM_SUPPORT_PATH/bin/find_app" com.macromates.TextMate.preview)/Contents/Resources/mate}" "$@"
+exec "${TM_MATE}" "$@"
