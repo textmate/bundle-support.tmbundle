@@ -122,6 +122,9 @@ module TextMate
           exec(*cmd.compact)
         }
 
+        Signal.trap("INT")  { ::Process.kill("-INT", pid)  }
+        Signal.trap("TERM") { ::Process.kill("-TERM", pid) }
+
         [ io[0][0], io[1][1], io[2][1] ].each { |fd| fd.close }
 
         if options[:input].nil?
