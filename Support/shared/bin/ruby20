@@ -4,10 +4,9 @@
 # version of ruby rather than a user-installed future version. It also allows
 # future customization of the version of ruby or it's environment.
 
-if [[ -e /System/Library/Frameworks/Ruby.framework/Versions/2.0/usr/bin/ruby ]]; then
-	exec /System/Library/Frameworks/Ruby.framework/Versions/2.0/usr/bin/ruby "$@"
-else
-	"$DIALOG" alert --title "Unable to Run Command" --body "This command requires OS X 10.9 or higher." --button1 "OK" &>/dev/null
-	
-	exit 200;
-fi
+for ruby in /System/Library/Frameworks/Ruby.framework/Versions/2.*/usr/bin/ruby; do
+   [ -e $ruby ] && exec $ruby "$@"
+done
+
+"$DIALOG" alert --title "Unable to Run Command" --body "Unsupported system support files, please contact support." --button1 "OK" &>/dev/null
+exit 200
