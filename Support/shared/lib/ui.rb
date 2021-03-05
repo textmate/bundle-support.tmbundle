@@ -66,7 +66,7 @@ module TextMate
         col = `osascript 2>/dev/null -e 'tell app "TextMate" to choose color#{def_col}'`
         return nil if col == "" # user cancelled -- when it happens, an exception is written to stderr
         col = col.scan(/\d+/).map { |i| "%02X" % (i.to_i / 257) }.join("")
-    
+
         color = prefix
         if /(.)\1(.)\2(.)\3/.match(col) then
           color << $1 + $2 + $3
@@ -75,14 +75,14 @@ module TextMate
         end
         return color
       end
-  
+
       # options should contain :title, :summary, and :log
       def simple_notification(options)
         raise if options.empty?
 
         support = ENV['TM_SUPPORT_PATH']
         nib     = support + '/nibs/SimpleNotificationWindow.nib'
-    
+
         plist = Hash.new
         plist['title']    = options[:title]   || ''
         plist['summary']  = options[:summary] || ''
@@ -90,7 +90,7 @@ module TextMate
 
         `#{TM_DIALOG} -cqp #{e_sh plist.to_plist} #{e_sh nib} &> /dev/null &`
       end
-  
+
       # Show Tooltip
       def tool_tip(content, options={}) # Possible options = {:format => :html|:text, :transparent => true}
         command = %{"$DIALOG" tooltip < /dev/null}
@@ -99,19 +99,19 @@ module TextMate
         command << ' --' << format << ' ' << e_sh(content)
         %x{ #{command} }
       end
-      
+
       # Interactive Code Completion Selector
       # Displays the pop-up completion menu with the list of +choices+ provided.
-      # 
+      #
       # +choices+ should be an array of dictionaries with the following keys:
-      # 
+      #
       # * +display+ -- The title to display in the suggestions list
       # * +insert+  -- Snippet to insert after selection
       # * +image+   -- An image name, see the <tt>:images</tt> option
       # * +match+   -- Typed text to filter on (defaults to +display+)
-      # 
+      #
       # All options except +display+ are optional.
-      # 
+      #
       # +options+ is a hash which can accept the following keys:
       #
       # * <tt>:extra_chars</tt>       -- by default only alphanumeric characters will be accepted,
@@ -121,7 +121,7 @@ module TextMate
       # * <tt>:static_prefix</tt>     -- a prefix which is used when filtering suggestions.
       # * <tt>:initial_filter</tt>    -- defaults to the current word
       # * <tt>:images</tt>            -- a +Hash+ of image names to paths
-      # 
+      #
       # If a block is given, the selected item from the +choices+ array will be yielded
       # (with a new key +index+ added, which is the index of the +choice+ into the +choices+ array)
       # and the result of the block inserted as a snippet
@@ -163,7 +163,7 @@ module TextMate
           `"$DIALOG" x-insert --snippet #{e_sh to_insert}` unless to_insert.empty?
         end
       end
-      
+
       # pop up a menu on screen
       def menu(options)
         return nil if options.empty?
@@ -192,12 +192,12 @@ module TextMate
       def request_string(options = Hash.new,&block)
         request_string_core('Enter string:', 'RequestString', options, &block)
       end
-      
+
       # request a password or other text which should be obscured from view
       def request_secure_string(options = Hash.new,&block)
         request_string_core('Enter password:', 'RequestSecureString', options, &block)
       end
-      
+
       # show a standard open file dialog
       def request_file(options = Hash.new,&block)
         _options = default_options_for_cocoa_dialog(options)
@@ -208,8 +208,8 @@ module TextMate
         _options["with-directory"] = options[:directory] if options[:directory]
         cocoa_dialog("fileselect", _options,&block)
       end
-      
-      # show a standard open file dialog, allowing multiple selections 
+
+      # show a standard open file dialog, allowing multiple selections
       def request_files(options = Hash.new,&block)
         _options = default_options_for_cocoa_dialog(options)
         _options["title"] = options[:title] || "Select File(s)"
@@ -220,7 +220,7 @@ module TextMate
         _options["select-multiple"] = ""
         cocoa_dialog("fileselect", _options,&block)
       end
-            
+
       # Request an item from a list of items
       def request_item(options = Hash.new,&block)
         items = options[:items] || []
@@ -250,7 +250,7 @@ module TextMate
           end
         end
       end
-      
+
       # Post a confirmation alert
       def request_confirmation(options = Hash.new,&block)
         button1 = options[:button1] || "Continue"
@@ -271,7 +271,7 @@ module TextMate
         class WindowNotFound < Exception
         end
 
-        class Dialog    
+        class Dialog
           # instantiate an asynchronous nib
           # two ways to call:
           # Dialog.new(nib_path, parameters, defaults=nil)
@@ -293,7 +293,7 @@ module TextMate
               io.close_write
               io.read.chomp
             end
-            
+
             raise WindowNotFound, "No such dialog (#{@dialog_token})\n} for command: #{command}" if $CHILD_STATUS != 0
       #      raise "No such dialog (#{@dialog_token})\n} for command: #{command}" if $CHILD_STATUS != 0
 
@@ -335,7 +335,7 @@ module TextMate
             end
             raise "Could not update (#{text})" if $CHILD_STATUS != 0
           end
-          
+
           # close the window
           def close
             %x{#{TM_DIALOG} -x #{@dialog_token}}
@@ -344,22 +344,22 @@ module TextMate
         end
 
       private
-      
+
       # common to request_string, request_secure_string
       def request_string_core(default_prompt, nib_name, options, &block)
         params = default_buttons(options)
         params["title"] = options[:title] || default_prompt
         params["prompt"] = options[:prompt] || ""
         params["string"] = options[:default] || ""
-        
+
         return_plist = %x{#{TM_DIALOG} -cmp #{e_sh params.to_plist} #{e_sh(ENV['TM_SUPPORT_PATH'] + "/nibs/#{nib_name}")}}
         return_hash = OSX::PropertyList::load(return_plist)
-        
+
         # return string is in hash->result->returnArgument.
         # If cancel button was clicked, hash->result is nil.
         return_value = return_hash['result']
         return_value = return_value['returnArgument'] if not return_value.nil?
-        
+
         if return_value == nil then
           block_given? ? raise(SystemExit) : nil
         else
@@ -391,20 +391,20 @@ module TextMate
           block_given? ? yield(result) : result
         end
       end
-      
+
       def default_buttons(user_options = Hash.new)
         options = Hash.new
         options['button1'] = user_options[:button1] || "OK"
         options['button2'] = user_options[:button2] || "Cancel"
         options
       end
-      
+
       def default_options_for_cocoa_dialog(user_options = Hash.new)
         options = default_buttons(user_options)
         options["string-output"] = ""
         options
       end
-      
+
     end
   end
 end
@@ -439,7 +439,7 @@ require "test/unit"
 # = alert usage =
 # ===============
 #	result = TextMate::UI.alert(:warning, 'The wallaby has escaped.', 'The hard disk may be full, or maybe you should try using a larger cage.', 'Dagnabit', 'I Am Relieved', 'Heavens')
-# 
+#
 #	puts "Button pressed: #{result}"
 
 
@@ -448,16 +448,16 @@ require "test/unit"
 # ==================
 # HOW TO TEST:
 # 1) Place your caret on the blank line in one of the test methods
-# 2) Use "Run Focused Unit Test" 
+# 2) Use "Run Focused Unit Test"
 
 ENV['WEB_PREVIEW_RUBY']='NO-RUN'
 class TestCompletes < Test::Unit::TestCase
   def test_basic_completion
     #Should complete the snippet, if there is one, without requiring a block
     TextMate::UI.complete(@choices)
-    # 
+    #
   end
-  
+
   def test_with_images
     @images = {
       "Macro"      => "/Applications/TextMate.app/Contents/Resources/Bundle Item Icons/Macros.png",
@@ -469,21 +469,21 @@ class TestCompletes < Test::Unit::TestCase
       "Drag"       => "/Applications/TextMate.app/Contents/Resources/Bundle Item Icons/Drag Commands.png",
       "Command"    => "/Applications/TextMate.app/Contents/Resources/Bundle Item Icons/Commands.png"
     }
-    
+
     TextMate::UI.complete @choices, :images => @images
-    # 
+    #
   end
-  
+
   def test_with_block
     #Use a block to create a custom snippet to be inserted, the block gets passed your choice as a hash
     # Cancelling the popup will pass nil to the block
     TextMate::UI.complete(@choices){|choice| e_sn choice.inspect }
-    # 
+    #
   end
-  
+
   def test_nested_or_stacked
     # Nested completes
-    # Put a complete in the block of another complete 
+    # Put a complete in the block of another complete
     # to make it wait for you to choose the first before starting the next.
     TextMate::UI.complete(@choices) do |choice_a|
       TextMate::UI.complete(@choices) do |choice_b|
@@ -494,9 +494,9 @@ class TestCompletes < Test::Unit::TestCase
       end
       choice_a['insert']
     end
-    # 
+    #
   end
-  
+
   def test_display_different_from_match
     @choices = [
       {'match' => 'moo', 'display' => 'Hairy Monkey'},
@@ -504,9 +504,9 @@ class TestCompletes < Test::Unit::TestCase
       {'match' => 'bar', 'display' => 'Angry Elephant'},
     ]
     TextMate::UI.complete(@choices)
-    # 
+    #
   end
-  
+
   def test_with_extra_chars
     @choices = [
       {'display' => '^moo'},
@@ -520,7 +520,7 @@ class TestCompletes < Test::Unit::TestCase
     # \
     # .
   end
-  
+
   def test_with_tooltip_format
     # Should show a tooltip in the correct format
     @choices = [
@@ -529,15 +529,15 @@ class TestCompletes < Test::Unit::TestCase
       {'image' => 'Command', 'display' => 'text', 'insert' => '(${1:one}, ${2:one}, "${3:three}"${4:, "${5:five}", ${6:six}})',                              'tool_tip' => "<div> not html <div>"},
     ]
     TextMate::UI.complete(@choices)
-    # 
+    #
   end
-  
+
   def test_with_tooltips
     # Should show a tooltip that includes the prefix
     TextMate::UI.complete(@choices, {:tool_tip_prefix => 'prefix'})
-    # 
+    #
   end
-  
+
   private
   def setup
     make_front!
@@ -565,9 +565,9 @@ class TestMenu < Test::Unit::TestCase
     ]
     t = TextMate::UI.menu(@items)
     assert_equal(0, t)
-    # 
+    #
   end
-  
+
   def test_should_accept_array_of_hashes
     @items = [
       { 'title' => 'item1' },
@@ -576,32 +576,32 @@ class TestMenu < Test::Unit::TestCase
     ]
     t = TextMate::UI.menu(@items)
     assert_equal({"title"=>"item1"}, t)
-    # 
+    #
   end
-  
+
   def test_should_return_nil_on_empty_set
     @items = [
     ]
     t = TextMate::UI.menu(@items)
     assert_equal(nil, t)
-    # 
+    #
   end
-  
+
   def test_should_return_nil_on_abort
     @items = [
       'Tester: Hit Escape!'
     ]
     t = TextMate::UI.menu(@items)
     assert_equal(nil, t, 'You need to his escape when the menu comes up to get this test to pass')
-    # 
+    #
   end
-  
+
   def test_should_work_with_dialog1
   end
-  
+
   def test_should_work_with_dialog2
   end
-  
+
   private
   def setup
     @items = []
@@ -633,10 +633,10 @@ class TestToolTips < Test::Unit::TestCase
   def test_text_formatting
     # Text is also the default format
     TextMate::UI.tool_tip <<-TEXT, :format => :text
-This 
-  should    keep 
-    all the whitespace 
-      that    is    given 
+This
+  should    keep
+    all the whitespace
+      that    is    given
         in     this      here
           s    t    r    i    n    g
     TEXT
