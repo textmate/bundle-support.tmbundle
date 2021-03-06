@@ -1,10 +1,9 @@
 # encoding: utf-8
 
-SUPPORT_LIB = ENV['TM_SUPPORT_PATH'] + '/lib/'
-require SUPPORT_LIB + 'escape'
-require SUPPORT_LIB + 'web_preview'
-require SUPPORT_LIB + 'io'
-require SUPPORT_LIB + 'tm/tempfile'
+require "#{ENV['TM_SUPPORT_PATH']}/lib/escape.rb"
+require "#{ENV['TM_SUPPORT_PATH']}/lib/web_preview.rb"
+require "#{ENV['TM_SUPPORT_PATH']}/lib/io.rb"
+require "#{ENV['TM_SUPPORT_PATH']}/lib/tm/tempfile.rb"
 
 require 'cgi'
 require 'fcntl'
@@ -28,7 +27,7 @@ def my_popen3(*cmd) # returns [stdin, stdout, strerr, pid]
     STDOUT.reopen(pr[1])
     STDERR.reopen(pe[1])
 
-    tm_interactive_input = SUPPORT_LIB + '/tm_interactive_input.dylib'
+    tm_interactive_input = "#{ENV['TM_SUPPORT_PATH']}/lib/tm_interactive_input.dylib"
     if (File.exists? tm_interactive_input) 
       dil = ENV['DYLD_INSERT_LIBRARIES']
       ENV['DYLD_INSERT_LIBRARIES'] = (dil) ? "#{tm_interactive_input}:#{dil}" : tm_interactive_input unless (dil =~ /#{tm_interactive_input}/)

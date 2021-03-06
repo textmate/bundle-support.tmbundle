@@ -1,7 +1,7 @@
 # encoding: utf-8
 
-require ENV["TM_SUPPORT_PATH"] + "/lib/escape"
-require ENV["TM_SUPPORT_PATH"] + "/lib/exit_codes"
+require "#{ENV['TM_SUPPORT_PATH']}/lib/escape.rb"
+require "#{ENV['TM_SUPPORT_PATH']}/lib/exit_codes.rb"
 
 module TextMate
   class << self

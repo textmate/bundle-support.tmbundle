@@ -1,5 +1,5 @@
 require "fileutils"
-require "#{ENV['TM_SUPPORT_PATH']}/lib/tm/tempfile"
+require "#{ENV['TM_SUPPORT_PATH']}/lib/tm/tempfile.rb"
 
 module TextMate
   class << self

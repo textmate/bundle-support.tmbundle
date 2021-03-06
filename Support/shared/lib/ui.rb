@@ -4,8 +4,8 @@ require 'English'
 # require File.dirname(__FILE__) + '/escape'
 # require File.dirname(__FILE__) + '/osx/plist'
 # Need to change this for testing the file in another folder
-require ENV['TM_SUPPORT_PATH'] + '/lib/escape'
-require ENV['TM_SUPPORT_PATH'] + '/lib/osx/plist'
+require "#{ENV['TM_SUPPORT_PATH']}/lib/escape.rb"
+require "#{ENV['TM_SUPPORT_PATH']}/lib/osx/plist"
 
 TM_DIALOG = e_sh ENV['DIALOG'] unless defined?(TM_DIALOG)
 
@@ -131,7 +131,7 @@ module TextMate
           STDERR.reopen(open('/dev/null'))
 
           unless options.has_key? :initial_filter
-            require ENV['TM_SUPPORT_PATH'] + '/lib/current_word'
+            require "#{ENV['TM_SUPPORT_PATH']}/lib/current_word.rb"
             characters = "a-zA-Z0-9" # Hard-coded into D2
             characters += Regexp.escape(options[:extra_chars]) if options[:extra_chars]
             options[:initial_filter] = Word.current_word characters, :left

@@ -59,7 +59,7 @@
 #   TextMate::Process("svn", args, :buffer => true)
 #
 
-require ENV['TM_SUPPORT_PATH'] + '/lib/io'
+require "#{ENV['TM_SUPPORT_PATH']}/lib/io.rb"
 require 'fcntl'
 
 def pid_exists?(pid)

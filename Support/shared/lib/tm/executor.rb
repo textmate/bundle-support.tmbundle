@@ -44,13 +44,12 @@
 #   :create_error_pipe Tells Executor to create a pipe which the child process can use to write raw HTML to.
 #     The default is “false”. The file descriptor can be obtained via the TM_ERROR_FD environment variable
 
-SUPPORT_LIB = ENV['TM_SUPPORT_PATH'] + '/lib/'
-require SUPPORT_LIB + 'tm/process'
-require SUPPORT_LIB + 'tm/htmloutput'
-require SUPPORT_LIB + 'tm/require_cmd'
-require SUPPORT_LIB + 'escape'
-require SUPPORT_LIB + 'exit_codes'
-require SUPPORT_LIB + 'io'
+require "#{ENV['TM_SUPPORT_PATH']}/lib/tm/process.rb"
+require "#{ENV['TM_SUPPORT_PATH']}/lib/tm/htmloutput.rb"
+require "#{ENV['TM_SUPPORT_PATH']}/lib/tm/require_cmd.rb"
+require "#{ENV['TM_SUPPORT_PATH']}/lib/escape.rb"
+require "#{ENV['TM_SUPPORT_PATH']}/lib/exit_codes.rb"
+require "#{ENV['TM_SUPPORT_PATH']}/lib/io.rb"
 require 'pathname'
 
 $KCODE = 'u' if RUBY_VERSION < "1.9"

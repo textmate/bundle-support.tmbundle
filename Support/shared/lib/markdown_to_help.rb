@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby18 -wKU
 # encoding: utf-8
 
-require ENV['TM_SUPPORT_PATH'] + '/lib/escape.rb'
+require "#{ENV['TM_SUPPORT_PATH']}/lib/escape.rb"
 
 class TreeNode
   attr_accessor :heading, :attributes, :parent, :level, :count

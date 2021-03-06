@@ -5,7 +5,7 @@
 # By: Thomas Aylott / subtleGradient, oblivious@
 # 
 
-require "#{ENV['TM_SUPPORT_PATH']}/lib/ui"
+require "#{ENV['TM_SUPPORT_PATH']}/lib/ui.rb"
 USE_DIALOG2 = ENV['DIALOG'] =~ /2$/ # DIALOG 2
 
 class TextmateCodeCompletion

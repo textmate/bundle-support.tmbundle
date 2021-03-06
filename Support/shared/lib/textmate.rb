@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 require "#{ENV['TM_SUPPORT_PATH']}/lib/osx/plist"
-require "#{ENV['TM_SUPPORT_PATH']}/lib/escape"
-require "#{ENV['TM_SUPPORT_PATH']}/lib/exit_codes"
+require "#{ENV['TM_SUPPORT_PATH']}/lib/escape.rb"
+require "#{ENV['TM_SUPPORT_PATH']}/lib/exit_codes.rb"
 
 module TextMate
 
@@ -30,7 +30,7 @@ module TextMate
 
     def require_cmd(command, message = nil)
       if `which "#{command}"`.empty?
-        require ENV['TM_SUPPORT_PATH'] + '/lib/tm/htmloutput'
+        require "#{ENV['TM_SUPPORT_PATH']}/lib/tm/htmloutput.rb"
         
         TextMate::HTMLOutput.show(
           :title      => "Command Not Found",
@@ -62,7 +62,7 @@ module TextMate
 
     def require_env_var(env_var, message = nil)
       unless ENV.has_key? env_var
-        require ENV['TM_SUPPORT_PATH'] + '/lib/tm/htmloutput'
+        require "#{ENV['TM_SUPPORT_PATH']}/lib/tm/htmloutput.rb"
         TextMate::HTMLOutput.show(
           :title      => "Environment Variable Not Set",
           :sub_title  => "Environment Variable Not Set - #{env_var}"

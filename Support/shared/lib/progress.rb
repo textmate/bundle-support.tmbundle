@@ -1,5 +1,5 @@
 require 'English'
-require File.dirname(__FILE__) + '/ui'
+require "#{ENV['TM_SUPPORT_PATH']}/lib/ui.rb"
 
 module TextMate
 
