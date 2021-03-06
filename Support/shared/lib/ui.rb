@@ -1,9 +1,6 @@
 # encoding: utf-8
 
 require 'English'
-# require File.dirname(__FILE__) + '/escape'
-# require File.dirname(__FILE__) + '/osx/plist'
-# Need to change this for testing the file in another folder
 require "#{ENV['TM_SUPPORT_PATH']}/lib/escape.rb"
 require "#{ENV['TM_SUPPORT_PATH']}/lib/osx/plist"
 
