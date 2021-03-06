@@ -1,8 +1,8 @@
 # encoding: utf-8
 
 require 'English'
-require "#{ENV['TM_SUPPORT_PATH']}/lib/escape.rb"
 require "#{ENV['TM_SUPPORT_PATH']}/lib/osx/plist"
+require 'shellwords'
 
 module TextMate
 
@@ -46,7 +46,7 @@ module TextMate
         raise "style must be one of #{types.inspect}" unless styles.include?(style)
 
         params = {'alertStyle' => style.to_s, 'messageTitle' => title, 'informativeText' => message, 'buttonTitles' => buttons}
-        button_index = %x{"$DIALOG" -ep #{e_sh params.to_plist}}.chomp.to_i
+        button_index = %x{"$DIALOG" -ep #{params.to_plist.shellescape}}.chomp.to_i
         buttons[button_index]
       end
 
@@ -83,7 +83,7 @@ module TextMate
         plist['summary']  = options[:summary] || ''
         plist['log']      = options[:log]     || ''
 
-        `"$DIALOG" -cqp #{e_sh plist.to_plist} #{e_sh nib} &> /dev/null &`
+        `"$DIALOG" -cqp #{plist.to_plist.shellescape} #{nib.shellescape} &> /dev/null &`
       end
 
       # Show Tooltip
@@ -91,7 +91,7 @@ module TextMate
         command = %{"$DIALOG" tooltip < /dev/null}
         command << ' --transparent' if options[:transparent]
         format = options[:format] ? options[:format].to_s : 'text'
-        command << ' --' << format << ' ' << e_sh(content)
+        command << ' --' << format << ' ' << content.shellescape
         %x{ #{command} }
       end
 
@@ -133,10 +133,10 @@ module TextMate
           end
 
           command =  '"$DIALOG" popup --returnChoice'
-          command << " --alreadyTyped #{e_sh options[:initial_filter]}"
-          command << " --staticPrefix #{e_sh options[:static_prefix]}"           if options[:static_prefix]
-          command << " --additionalWordCharacters #{e_sh options[:extra_chars]}" if options[:extra_chars]
-          command << " --caseInsensitive"                                        if options[:case_insensitive]
+          command << " --alreadyTyped #{options[:initial_filter].shellescape}"
+          command << " --staticPrefix #{options[:static_prefix].shellescape}"           if options[:static_prefix]
+          command << " --additionalWordCharacters #{options[:extra_chars].shellescape}" if options[:extra_chars]
+          command << " --caseInsensitive"                                               if options[:case_insensitive]
 
           choices = choices.map! {|c| {'display' => c.to_s} } unless choices[0].is_a? Hash
           plist   = {'suggestions' => choices}
@@ -155,7 +155,7 @@ module TextMate
           to_insert = block.call(result).to_s
 
           # Insert the snippet if necessary
-          `"$DIALOG" x-insert --snippet #{e_sh to_insert}` unless to_insert.empty?
+          `"$DIALOG" x-insert --snippet #{to_insert.shellescape}` unless to_insert.empty?
         end
       end
 
@@ -229,7 +229,7 @@ module TextMate
           params["string"] = options[:default] || ""
           params["items"] = items
 
-          return_plist = %x{"$DIALOG" -cmp #{e_sh params.to_plist} #{e_sh(ENV['TM_SUPPORT_PATH'] + "/nibs/RequestItem")}}
+          return_plist = %x{"$DIALOG" -cmp #{params.to_plist.shellescape} "$TM_SUPPORT_PATH/nibs/RequestItem"}
           return_hash = OSX::PropertyList::load(return_plist)
 
           # return string is in hash->result->returnArgument.
@@ -280,9 +280,9 @@ module TextMate
             end
 
             center_arg = center.nil? ? '' : '-c'
-            defaults_args = defaults.nil? ? '' : %Q{-d #{e_sh defaults.to_plist}}
+            defaults_args = defaults.nil? ? '' : %Q{-d #{defaults.to_plist.shellescape}}
 
-            command = %Q{"$DIALOG" -a #{center_arg} #{defaults_args} #{e_sh nib_path}}
+            command = %Q{"$DIALOG" -a #{center_arg} #{defaults_args} #{nib_path.shellescape}}
             @dialog_token = ::IO.popen(command, 'w+') do |io|
               io << start_parameters.to_plist
               io.close_write
@@ -347,7 +347,7 @@ module TextMate
         params["prompt"] = options[:prompt] || ""
         params["string"] = options[:default] || ""
 
-        return_plist = %x{"$DIALOG" -cmp #{e_sh params.to_plist} #{e_sh(ENV['TM_SUPPORT_PATH'] + "/nibs/#{nib_name}")}}
+        return_plist = %x{"$DIALOG" -cmp #{params.to_plist.shellescape} "$TM_SUPPORT_PATH/nibs/#{nib_name}"}
         return_hash = OSX::PropertyList::load(return_plist)
 
         # return string is in hash->result->returnArgument.
@@ -366,12 +366,11 @@ module TextMate
         str = ""
         options.each_pair do |key, value|
           unless value.nil?
-            str << " --#{e_sh key} "
-            str << Array(value).map { |s| e_sh s }.join(" ")
+            str << " --#{key.shellescape} "
+            str << Array(value).shelljoin
           end
         end
-        cd = ENV['TM_SUPPORT_PATH'] + '/bin/CocoaDialog.app/Contents/MacOS/CocoaDialog'
-        result = %x{#{e_sh cd} 2>/dev/console #{e_sh type} #{str} --float}
+        result = %x{"$TM_SUPPORT_PATH/bin/CocoaDialog.app/Contents/MacOS/CocoaDialog" 2>/dev/console #{type.shellescape} #{str} --float}
         result = result.to_a.map{|line| line.chomp}
         if (type == "fileselect")
           if result.length == 0
@@ -421,7 +420,7 @@ require "test/unit"
 # = Misc =
 # ========
 # params = {'title' => "Hotness", 'prompt' => 'Please enter some hotness', 'string' => 'teh hotness'}
-# return_value = %x{"$DIALOG" -cmp #{e_sh params.to_plist} #{e_sh(ENV['TM_SUPPORT_PATH'] + '/nibs/RequestString')}}
+# return_value = %x{"$DIALOG" -cmp #{params.to_plist.shellescape} "$TM_SUPPORT_PATH/nibs/RequestString"}
 # return_hash = OSX::PropertyList::load(return_value)
 # puts return_hash['result'].inspect
 
@@ -470,6 +469,7 @@ class TestCompletes < Test::Unit::TestCase
   end
 
   def test_with_block
+    require "#{ENV['TM_SUPPORT_PATH']}/lib/escape.rb"
     #Use a block to create a custom snippet to be inserted, the block gets passed your choice as a hash
     # Cancelling the popup will pass nil to the block
     TextMate::UI.complete(@choices){|choice| e_sn choice.inspect }
