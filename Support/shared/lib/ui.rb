@@ -1,7 +1,7 @@
 # encoding: utf-8
 
+require "#{ENV['TM_SUPPORT_PATH']}/private/plist"
 require 'English'
-require "#{ENV['TM_SUPPORT_PATH']}/lib/osx/plist"
 require 'shellwords'
 
 module TextMate
@@ -142,7 +142,7 @@ module TextMate
 
           result = ::IO.popen(command, 'w+') do |io|
             io << plist.to_plist; io.close_write
-            OSX::PropertyList.load io rescue nil
+            Plist.parse_xml io rescue nil
           end
 
           # Use a default block if none was provided
@@ -293,7 +293,7 @@ module TextMate
               raise WindowNotFound if $CHILD_STATUS == 54528  # -43
               raise "Error (#{text})" if $CHILD_STATUS != 0
 
-              OSX::PropertyList::load(text)
+              Plist.parse_xml(text)
             end
 
             if block_given? then
@@ -326,13 +326,13 @@ module TextMate
       private
 
       def run_dialog(command, *parms)
-        open("|\"$DIALOG\" #{command} #{parms.shelljoin}") { |io| OSX::PropertyList::load(io) }
+        open("|\"$DIALOG\" #{command} #{parms.shelljoin}") { |io| Plist.parse_xml(io) }
       end
 
       def run_modal_dialog(*params)
         token = %x{"$DIALOG" nib --load #{params.shelljoin}}
         plist = %x{"$DIALOG" nib --modal --wait #{token} --dispose #{token}}
-        OSX::PropertyList::load(plist)
+        Plist.parse_xml(plist)
       end
 
       # common to request_string, request_secure_string
@@ -413,7 +413,7 @@ require "test/unit"
 # ========
 # params = {'title' => "Hotness", 'prompt' => 'Please enter some hotness', 'string' => 'teh hotness'}
 # return_value = %x{"$DIALOG" -cmp #{params.to_plist.shellescape} "$TM_SUPPORT_PATH/nibs/RequestString"}
-# return_hash = OSX::PropertyList::load(return_value)
+# return_hash = Plist.parse_xml(return_value)
 # puts return_hash['result'].inspect
 
 # ==========
