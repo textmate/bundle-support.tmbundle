@@ -212,25 +212,21 @@ module TextMate
         when 0 then block_given? ? raise(SystemExit) : nil
         when 1 then block_given? ? yield(items[0]) : items[0]
         else
-          params = default_buttons(options)
-          params["title"] = options[:title] || "Select item:"
-          params["prompt"] = options[:prompt] || ""
-          params["string"] = options[:default] || ""
-          params["items"] = items
+          model = {
+            'title'   => options[:title]   || 'Select item:',
+            'prompt'  => options[:prompt]  || '',
+            'string'  => options[:default] || '',
+            'items'   => items,
+            'button1' => options[:button1] || 'OK',
+            'button2' => options[:button2] || 'Cancel',
+          }
 
-          return_plist = %x{"$DIALOG" -cmp #{params.to_plist.shellescape} "$TM_SUPPORT_PATH/nibs/RequestItem"}
-          return_hash = OSX::PropertyList::load(return_plist)
-
-          # return string is in hash->result->returnArgument.
-          # If cancel button was clicked, hash->result is nil.
-          return_value = return_hash['result']
-          return_value = return_value['returnArgument'] if not return_value.nil?
-          return_value = return_value.first if return_value.is_a? Array
-
-          if return_value == nil then
-            block_given? ? raise(SystemExit) : nil
+          res = run_modal_dialog("#{ENV['TM_SUPPORT_PATH']}/nibs/RequestItem.nib", '--center', '--model', model.to_plist)
+          if res['eventInfo'].include?('returnArgument')
+            value = res['eventInfo']['returnArgument'].first
+            block_given? ? yield(value) : value
           else
-            block_given? ? yield(return_value) : return_value
+            block_given? ? raise(SystemExit) : nil
           end
         end
       end
@@ -333,25 +329,28 @@ module TextMate
         open("|\"$DIALOG\" #{command} #{parms.shelljoin}") { |io| OSX::PropertyList::load(io) }
       end
 
+      def run_modal_dialog(*params)
+        token = %x{"$DIALOG" nib --load #{params.shelljoin}}
+        plist = %x{"$DIALOG" nib --modal --wait #{token} --dispose #{token}}
+        OSX::PropertyList::load(plist)
+      end
+
       # common to request_string, request_secure_string
       def request_string_core(default_prompt, nib_name, options, &block)
-        params = default_buttons(options)
-        params["title"] = options[:title] || default_prompt
-        params["prompt"] = options[:prompt] || ""
-        params["string"] = options[:default] || ""
+        model = {
+          'title'   => options[:title]   || default_prompt,
+          'prompt'  => options[:prompt]  || '',
+          'string'  => options[:default] || '',
+          'button1' => options[:button1] || 'OK',
+          'button2' => options[:button2] || 'Cancel',
+        }
 
-        return_plist = %x{"$DIALOG" -cmp #{params.to_plist.shellescape} "$TM_SUPPORT_PATH/nibs/#{nib_name}"}
-        return_hash = OSX::PropertyList::load(return_plist)
-
-        # return string is in hash->result->returnArgument.
-        # If cancel button was clicked, hash->result is nil.
-        return_value = return_hash['result']
-        return_value = return_value['returnArgument'] if not return_value.nil?
-
-        if return_value == nil then
-          block_given? ? raise(SystemExit) : nil
+        res = run_modal_dialog("#{ENV['TM_SUPPORT_PATH']}/nibs/#{nib_name}.nib", '--center', '--model', model.to_plist)
+        if res['eventInfo'].include?('returnArgument')
+          value = res['eventInfo']['returnArgument']
+          block_given? ? yield(value) : value
         else
-          block_given? ? yield(return_value) : return_value
+          block_given? ? raise(SystemExit) : nil
         end
       end
 
