@@ -7,8 +7,6 @@ require 'English'
 require "#{ENV['TM_SUPPORT_PATH']}/lib/escape.rb"
 require "#{ENV['TM_SUPPORT_PATH']}/lib/osx/plist"
 
-TM_DIALOG = e_sh ENV['DIALOG'] unless defined?(TM_DIALOG)
-
 module TextMate
 
   module UI
@@ -51,7 +49,7 @@ module TextMate
         raise "style must be one of #{types.inspect}" unless styles.include?(style)
 
         params = {'alertStyle' => style.to_s, 'messageTitle' => title, 'informativeText' => message, 'buttonTitles' => buttons}
-        button_index = %x{#{TM_DIALOG} -ep #{e_sh params.to_plist}}.chomp.to_i
+        button_index = %x{"$DIALOG" -ep #{e_sh params.to_plist}}.chomp.to_i
         buttons[button_index]
       end
 
@@ -88,7 +86,7 @@ module TextMate
         plist['summary']  = options[:summary] || ''
         plist['log']      = options[:log]     || ''
 
-        `#{TM_DIALOG} -cqp #{e_sh plist.to_plist} #{e_sh nib} &> /dev/null &`
+        `"$DIALOG" -cqp #{e_sh plist.to_plist} #{e_sh nib} &> /dev/null &`
       end
 
       # Show Tooltip
@@ -137,7 +135,7 @@ module TextMate
             options[:initial_filter] = Word.current_word characters, :left
           end
 
-          command =  "#{TM_DIALOG} popup --returnChoice"
+          command =  '"$DIALOG" popup --returnChoice'
           command << " --alreadyTyped #{e_sh options[:initial_filter]}"
           command << " --staticPrefix #{e_sh options[:static_prefix]}"           if options[:static_prefix]
           command << " --additionalWordCharacters #{e_sh options[:extra_chars]}" if options[:extra_chars]
@@ -174,7 +172,7 @@ module TextMate
           options = options.collect { |e| e == nil ? { 'separator' => 1 } : { 'title' => e } }
         end
 
-        res = ::IO.popen("#{TM_DIALOG} -u", "r+") do |io|
+        res = ::IO.popen('"$DIALOG" -u', "r+") do |io|
           Thread.new do
             plist = { 'menuItems' => options }.to_plist
             io.write plist; io.close_write
@@ -234,7 +232,7 @@ module TextMate
           params["string"] = options[:default] || ""
           params["items"] = items
 
-          return_plist = %x{#{TM_DIALOG} -cmp #{e_sh params.to_plist} #{e_sh(ENV['TM_SUPPORT_PATH'] + "/nibs/RequestItem")}}
+          return_plist = %x{"$DIALOG" -cmp #{e_sh params.to_plist} #{e_sh(ENV['TM_SUPPORT_PATH'] + "/nibs/RequestItem")}}
           return_hash = OSX::PropertyList::load(return_plist)
 
           # return string is in hash->result->returnArgument.
@@ -287,7 +285,7 @@ module TextMate
             center_arg = center.nil? ? '' : '-c'
             defaults_args = defaults.nil? ? '' : %Q{-d #{e_sh defaults.to_plist}}
 
-            command = %Q{#{TM_DIALOG} -a #{center_arg} #{defaults_args} #{e_sh nib_path}}
+            command = %Q{"$DIALOG" -a #{center_arg} #{defaults_args} #{e_sh nib_path}}
             @dialog_token = ::IO.popen(command, 'w+') do |io|
               io << start_parameters.to_plist
               io.close_write
@@ -299,7 +297,7 @@ module TextMate
 
             # this is a workaround for a presumed Leopard bug, see log entry for revision 8566 for more info
             if animate = start_parameters['progressAnimate']
-              open("|#{TM_DIALOG} -t#{@dialog_token}", "w") { |io| io << { 'progressAnimate' => animate }.to_plist }
+              open("|\"$DIALOG\" -t#{@dialog_token}", "w") { |io| io << { 'progressAnimate' => animate }.to_plist }
             end
           end
 
@@ -309,7 +307,7 @@ module TextMate
           # in a continuous loop. The block must return true to continue the loop, false to break out of it.
           def wait_for_input
             wait_for_input_core = lambda do
-              text = %x{#{TM_DIALOG} -w #{@dialog_token} }
+              text = %x{"$DIALOG" -w #{@dialog_token} }
               raise WindowNotFound if $CHILD_STATUS == 54528  # -43
               raise "Error (#{text})" if $CHILD_STATUS != 0
 
@@ -328,7 +326,7 @@ module TextMate
 
           # update bindings with new value(s)
           def parameters=(parameters)
-            text = ::IO.popen("#{TM_DIALOG} -t #{@dialog_token}", 'w+') do |io|
+            text = ::IO.popen("\"$DIALOG\" -t #{@dialog_token}", 'w+') do |io|
               io << parameters.to_plist
               io.close_write
               io.read
@@ -338,7 +336,7 @@ module TextMate
 
           # close the window
           def close
-            %x{#{TM_DIALOG} -x #{@dialog_token}}
+            %x{"$DIALOG" -x #{@dialog_token}}
           end
 
         end
@@ -352,7 +350,7 @@ module TextMate
         params["prompt"] = options[:prompt] || ""
         params["string"] = options[:default] || ""
 
-        return_plist = %x{#{TM_DIALOG} -cmp #{e_sh params.to_plist} #{e_sh(ENV['TM_SUPPORT_PATH'] + "/nibs/#{nib_name}")}}
+        return_plist = %x{"$DIALOG" -cmp #{e_sh params.to_plist} #{e_sh(ENV['TM_SUPPORT_PATH'] + "/nibs/#{nib_name}")}}
         return_hash = OSX::PropertyList::load(return_plist)
 
         # return string is in hash->result->returnArgument.
@@ -426,7 +424,7 @@ require "test/unit"
 # = Misc =
 # ========
 # params = {'title' => "Hotness", 'prompt' => 'Please enter some hotness', 'string' => 'teh hotness'}
-# return_value = %x{#{TM_DIALOG} -cmp #{e_sh params.to_plist} #{e_sh(ENV['TM_SUPPORT_PATH'] + '/nibs/RequestString')}}
+# return_value = %x{"$DIALOG" -cmp #{e_sh params.to_plist} #{e_sh(ENV['TM_SUPPORT_PATH'] + '/nibs/RequestString')}}
 # return_hash = OSX::PropertyList::load(return_value)
 # puts return_hash['result'].inspect
 
