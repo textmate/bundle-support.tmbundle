@@ -45,9 +45,10 @@ module TextMate
         styles = [:warning, :informational, :critical]
         raise "style must be one of #{types.inspect}" unless styles.include?(style)
 
-        params = {'alertStyle' => style.to_s, 'messageTitle' => title, 'informativeText' => message, 'buttonTitles' => buttons}
-        button_index = %x{"$DIALOG" -ep #{params.to_plist.shellescape}}.chomp.to_i
-        buttons[button_index]
+        params = [ '--alertStyle', style.to_s, '--title', title, '--body', message ]
+        buttons.each_with_index { |str, i| params += [ "--button#{i+1}", str ] }
+        res = run_dialog('alert', *params)
+        buttons[res['buttonClicked']]
       end
 
       # show the system color picker and return a hex-format color (#RRGGBB).
@@ -75,15 +76,13 @@ module TextMate
       def simple_notification(options)
         raise if options.empty?
 
-        support = ENV['TM_SUPPORT_PATH']
-        nib     = support + '/nibs/SimpleNotificationWindow.nib'
+        model = {
+          'title'   => options[:title]   || '«title»',
+          'summary' => options[:summary] || '«summary»',
+          'log'     => options[:log]     || '«log»',
+        }
 
-        plist = Hash.new
-        plist['title']    = options[:title]   || ''
-        plist['summary']  = options[:summary] || ''
-        plist['log']      = options[:log]     || ''
-
-        `"$DIALOG" -cqp #{plist.to_plist.shellescape} #{nib.shellescape} &> /dev/null &`
+        run_dialog('nib', '--load', "#{ENV['TM_SUPPORT_PATH']}/nibs/SimpleNotificationWindow.nib", '--model', model.to_plist)
       end
 
       # Show Tooltip
@@ -163,24 +162,14 @@ module TextMate
       def menu(options)
         return nil if options.empty?
 
-        return_hash = true
-        if options[0].kind_of?(String)
-          return_hash = false
-          options = options.collect { |e| e == nil ? { 'separator' => 1 } : { 'title' => e } }
+        return_hash = options[0].kind_of?(Hash)
+        unless return_hash
+          options = options.each_with_index.map { |e, i| e == nil ? { 'separator' => 1 } : { 'title' => e, '_index' => i } }
         end
 
-        res = ::IO.popen('"$DIALOG" -u', "r+") do |io|
-          Thread.new do
-            plist = { 'menuItems' => options }.to_plist
-            io.write plist; io.close_write
-          end
-          OSX::PropertyList::load(io)
+        if res = run_dialog('menu', '--items', options.to_plist)
+          return_hash ? res : res['_index']
         end
-
-        return nil unless res.has_key? 'selectedIndex'
-        index = res['selectedIndex'].to_i
-
-        return return_hash ? options[index] : index
       end
 
       # request a single, simple string
@@ -339,6 +328,10 @@ module TextMate
         end
 
       private
+
+      def run_dialog(command, *parms)
+        open("|\"$DIALOG\" #{command} #{parms.shelljoin}") { |io| OSX::PropertyList::load(io) }
+      end
 
       # common to request_string, request_secure_string
       def request_string_core(default_prompt, nib_name, options, &block)
