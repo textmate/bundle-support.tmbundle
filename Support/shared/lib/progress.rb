@@ -1,4 +1,3 @@
-require 'English'
 require "#{ENV['TM_SUPPORT_PATH']}/lib/ui.rb"
 
 module TextMate
