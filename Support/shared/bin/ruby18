@@ -40,4 +40,4 @@ elif [[ ! -e ~/Library/Application\ Support/TextMate/Ruby/1.8.7/bin/ruby ]]; the
 	cd - &>/dev/null
 fi
 
-exec ~/Library/Application\ Support/TextMate/Ruby/1.8.7/bin/ruby -r"$TM_SUPPORT_PATH/lib/ruby18_fix_loadpath.rb" "$@"
+exec ~/Library/Application\ Support/TextMate/Ruby/1.8.7/bin/ruby -r"$TM_SUPPORT_PATH/private/ruby18_fix_loadpath.rb" "$@"
