@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby18 -wKU
 # encoding: utf-8
 
+require "#{ENV['TM_SUPPORT_PATH']}/private/track_usage.rb"
 require "#{ENV['TM_SUPPORT_PATH']}/lib/escape.rb"
 
 class TreeNode

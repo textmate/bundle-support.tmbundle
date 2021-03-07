@@ -1,5 +1,6 @@
 # encoding: utf-8
 
+require "#{ENV['TM_SUPPORT_PATH']}/private/track_usage.rb"
 require "#{ENV['TM_SUPPORT_PATH']}/lib/ui.rb"
 
 module TextMate

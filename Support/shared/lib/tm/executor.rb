@@ -44,6 +44,7 @@
 #   :create_error_pipe Tells Executor to create a pipe which the child process can use to write raw HTML to.
 #     The default is “false”. The file descriptor can be obtained via the TM_ERROR_FD environment variable
 
+require "#{ENV['TM_SUPPORT_PATH']}/private/track_usage.rb"
 require "#{ENV['TM_SUPPORT_PATH']}/lib/tm/process.rb"
 require "#{ENV['TM_SUPPORT_PATH']}/lib/tm/htmloutput.rb"
 require "#{ENV['TM_SUPPORT_PATH']}/lib/tm/require_cmd.rb"

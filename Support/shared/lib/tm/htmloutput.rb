@@ -15,6 +15,7 @@
 
 require 'erb'
 require 'cgi'
+require "#{ENV['TM_SUPPORT_PATH']}/private/track_usage.rb"
 require "#{ENV['TM_SUPPORT_PATH']}/lib/escape.rb"
 
 HTMLOUTPUT_TEMPLATE = <<-HTML

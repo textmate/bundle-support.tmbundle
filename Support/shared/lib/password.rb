@@ -5,6 +5,7 @@
 #   TextMate.call_with_password({ :user => 'duff', :url => 'http://example.com/blog/xmlrpc.php' }) do |pw|
 #     pw == "foo" ? :reject_pw : :accept_pw
 #   end
+require "#{ENV['TM_SUPPORT_PATH']}/private/track_usage.rb"
 require "#{ENV['TM_SUPPORT_PATH']}/lib/ui.rb"
 require "#{ENV['TM_SUPPORT_PATH']}/lib/textmate.rb"
 

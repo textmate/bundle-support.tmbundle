@@ -1,3 +1,5 @@
+require "#{ENV['TM_SUPPORT_PATH']}/private/track_usage.rb"
+
 module TextMate
 
 	def TextMate.url_esc (url)

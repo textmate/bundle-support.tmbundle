@@ -59,6 +59,7 @@
 #   TextMate::Process("svn", args, :buffer => true)
 #
 
+require "#{ENV['TM_SUPPORT_PATH']}/private/track_usage.rb"
 require "#{ENV['TM_SUPPORT_PATH']}/lib/io.rb"
 require 'fcntl'
 

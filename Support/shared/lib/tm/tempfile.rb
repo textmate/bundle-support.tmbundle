@@ -1,3 +1,5 @@
+require "#{ENV['TM_SUPPORT_PATH']}/private/track_usage.rb"
+
 module TextMate
   module IO
     class << self
