@@ -121,8 +121,8 @@ module TextMate
       # and the result of the block inserted as a snippet
       def complete(choices, options = {}, &block) #  :yields: choice
         fork do
-          STDOUT.reopen(open('/dev/null'))
-          STDERR.reopen(open('/dev/null'))
+          STDOUT.reopen(open('/dev/null', 'w'))
+          STDERR.reopen(open('/dev/null', 'w'))
 
           unless options.has_key? :initial_filter
             require "#{ENV['TM_SUPPORT_PATH']}/lib/current_word.rb"
