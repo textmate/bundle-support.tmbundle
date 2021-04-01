@@ -36,6 +36,7 @@
 #     The rules of String.sub apply.  By default, this just extracts $1 from the match.
 #   :verb describes what the call to Executor is doing.  Default is “Running”.
 #   :noun describes what the call to Executor is working on.  Default is $TM_DISPLAY_NAME.
+#   :default_args are arguments to be passed to the *default interpreter*.  They will be inserted before the path to the script. They will *not* be inserted when the interpreter is parsed from the file's #!.
 #   :env is the environment in which the command will be run.  Default is ENV.
 #   :script_args are arguments to be passed to the *script* as opposed to the interpreter.  They will
 #     be appended after the path to the script in the arguments to the interpreter.
@@ -74,6 +75,7 @@ module TextMate
                    :verb              => "Running",
                    :noun              => ENV['TM_DISPLAYNAME'],
                    :env               => nil,
+                   :default_args      => [],
                    :chdir             => ENV['TM_PROJECT_DIRECTORY'] || ENV['TM_DIRECTORY'] || ENV['HOME'],
                    :script_args       => [],
                    :use_hashbang      => true,
@@ -86,9 +88,7 @@ module TextMate
 
         options.merge! args.pop if args.last.is_a? Hash
 
-        if File.exists?(args[-1]) and options[:use_hashbang] == true
-          args[0] = parse_hashbang(args[-1]) || args[0]
-        end
+        args[0] = parse_executable(args[-1], args[0], options)
 
         # TODO: checking for an array here because a #! line
         # in the script will cause args[0] set to an array by the previous statement.
@@ -188,6 +188,13 @@ module TextMate
           ENV['TM_DISPLAYNAME'] = File.basename filepath
           Dir.chdir(File.dirname(filepath))
         end
+      end
+
+      def parse_executable(file, default, options)
+        if File.exists?(file) and options[:use_hashbang]
+          executable = parse_hashbang(file)
+        end
+        executable || [default, *options[:default_args]]
       end
 
       def parse_hashbang(file)
